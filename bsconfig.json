@@ -1,0 +1,28 @@
+{
+  "name": "float-contracts",
+  "namespace": false,
+  "bs-dependencies": [],
+  "ppx-flags": [
+    "bs-let/ppx"
+  ],
+  "sources": [
+    {
+      "dir": "test",
+      "subdirs": true
+    },
+    {
+      "dir": "deployTests",
+      "subdirs": true
+    }
+  ],
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "warnings": {
+    "error": "+101+8"
+  },
+  "bsc-flags": [
+    "-open Belt"
+  ]
+}

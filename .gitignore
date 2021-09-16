@@ -1,0 +1,44 @@
+node_modules
+
+# Buidler files
+cache
+artifacts
+build
+
+# Test codegen
+codegen
+
+# Secrets
+secretsManager.js
+
+# rescript
+.merlin
+.bsb.lock
+lib
+
+coverage.json
+
+coverage-all
+coverage-unit
+coverage-integration
+
+abis
+ast
+
+# No need to keep javascript files in contract tests
+test/**/*.js
+
+test/library/contracts/*
+!test/library/contracts/.gitkeep
+test/library/smock/*
+!test/library/smock/.gitkeep
+
+contracts/testing/generated/*
+
+contract-docs
+
+deployments/*
+!deployments/mumbai
+!deployments/polygon
+
+deploymentSummary.json

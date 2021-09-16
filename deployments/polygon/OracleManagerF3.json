@@ -1,0 +1,222 @@
+{
+  "address": "0x70a760ACD5503A8D6746BC7F00571F570ae0aD44",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_ethMarketCapFeed",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_btcMarketCapFeed",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "btcMarketCapFeed",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ethMarketCapFeed",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLatestPrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "priceData",
+      "outputs": [
+        {
+          "internalType": "uint80",
+          "name": "lastRoundEth",
+          "type": "uint80"
+        },
+        {
+          "internalType": "uint80",
+          "name": "lastRoundBtc",
+          "type": "uint80"
+        },
+        {
+          "internalType": "uint128",
+          "name": "price",
+          "type": "uint128"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updatePrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x2a878bf4795e4e985a158e7070021ef684ea0a43d08dead63e143f23799a7f5b",
+  "receipt": {
+    "to": null,
+    "from": "0x921c380d6047f09a4E61D29d1Fc054fB52259CA9",
+    "contractAddress": "0x70a760ACD5503A8D6746BC7F00571F570ae0aD44",
+    "transactionIndex": 282,
+    "gasUsed": "463622",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000002000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000010000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000008000001000000000000000000000000000000100000000000000000000000000200000000000000000000000000000000000000040000100000",
+    "blockHash": "0xe75ec9e27bf82efb65304f80ff211e5c5fe12da001aa9d0302e9a9e1c9516239",
+    "transactionHash": "0x2a878bf4795e4e985a158e7070021ef684ea0a43d08dead63e143f23799a7f5b",
+    "logs": [
+      {
+        "transactionIndex": 282,
+        "blockNumber": 19059803,
+        "transactionHash": "0x2a878bf4795e4e985a158e7070021ef684ea0a43d08dead63e143f23799a7f5b",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000921c380d6047f09a4e61d29d1fc054fb52259ca9",
+          "0x000000000000000000000000b79fad4ca981472442f53d16365fdf0305ffd8e9"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000010789e163358000000000000000000000000000000000000000000000000000bb9d9891a08e742000000000000000000000000000000000000000000004300cb311e28b796bebd0000000000000000000000000000000000000000000000000ba960eb03d58f42000000000000000000000000000000000000000000004300cb4196c6cdca16bd",
+        "logIndex": 420,
+        "blockHash": "0xe75ec9e27bf82efb65304f80ff211e5c5fe12da001aa9d0302e9a9e1c9516239"
+      }
+    ],
+    "blockNumber": 19059803,
+    "cumulativeGasUsed": "19770275",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x67935f65D1577ced9f4929D3679A157E95C1c02c",
+    "0x18E4058491C3F58bC2f747A9E64cA256Ed6B318d"
+  ],
+  "solcInputHash": "52454279612323b6a360bfe353c18a08",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.3+commit.8d00100c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_ethMarketCapFeed\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_btcMarketCapFeed\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"btcMarketCapFeed\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ethMarketCapFeed\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestPrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"priceData\",\"outputs\":[{\"internalType\":\"uint80\",\"name\":\"lastRoundEth\",\"type\":\"uint80\"},{\"internalType\":\"uint80\",\"name\":\"lastRoundBtc\",\"type\":\"uint80\"},{\"internalType\":\"uint128\",\"name\":\"price\",\"type\":\"uint128\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updatePrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/oracles/OracleManagerFlipp3ning.sol\":\"OracleManagerFlipp3ning\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\ninterface AggregatorV3Interface {\\n\\n  function decimals()\\n    external\\n    view\\n    returns (\\n      uint8\\n    );\\n\\n  function description()\\n    external\\n    view\\n    returns (\\n      string memory\\n    );\\n\\n  function version()\\n    external\\n    view\\n    returns (\\n      uint256\\n    );\\n\\n  // getRoundData and latestRoundData should both raise \\\"No data present\\\"\\n  // if they do not have data to report, instead of returning unset values\\n  // which could be misinterpreted as actual reported values.\\n  function getRoundData(\\n    uint80 _roundId\\n  )\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n  function latestRoundData()\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n}\\n\",\"keccak256\":\"0xe6f5ac8c47f3b9b6135051efb9216f9ba5b312a6ecc20209b4f66a780443c328\",\"license\":\"MIT\"},\"contracts/interfaces/IOracleManager.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.3;\\n\\n/*\\n * Manages price feeds from different oracle implementations.\\n */\\ninterface IOracleManager {\\n  function updatePrice() external returns (int256);\\n\\n  /*\\n   *Returns the latest price from the oracle feed.\\n   */\\n  function getLatestPrice() external view returns (int256);\\n}\\n\",\"keccak256\":\"0x257b71cc5a9394ba0ea022556bf1f38012046c5ca568ff0d73ce6cf95c278376\",\"license\":\"BUSL-1.1\"},\"contracts/oracles/OracleManagerFlipp3ning.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.3;\\n\\nimport \\\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\\\";\\nimport \\\"../interfaces/IOracleManager.sol\\\";\\n\\ncontract OracleManagerFlipp3ning is IOracleManager {\\n  address public ethMarketCapFeed;\\n  address public btcMarketCapFeed;\\n\\n  struct PriceData {\\n    uint80 lastRoundEth;\\n    uint80 lastRoundBtc;\\n    uint128 price;\\n  }\\n\\n  PriceData public priceData;\\n\\n  constructor(address _ethMarketCapFeed, address _btcMarketCapFeed) {\\n    ethMarketCapFeed = _ethMarketCapFeed;\\n    btcMarketCapFeed = _btcMarketCapFeed;\\n\\n    require(\\n      AggregatorV3Interface(ethMarketCapFeed).decimals() ==\\n        AggregatorV3Interface(btcMarketCapFeed).decimals(),\\n      \\\"Decimals for feeds are different!\\\"\\n    );\\n\\n    (uint80 _ethRound, uint80 _btcRound, int256 _ethMarketCap, int256 _btcMarketCap) = _feedData();\\n\\n    priceData.price = _dominance(_ethMarketCap, _btcMarketCap);\\n    priceData.lastRoundEth = _ethRound;\\n    priceData.lastRoundBtc = _btcRound;\\n  }\\n\\n  function _feedData()\\n    internal\\n    view\\n    returns (\\n      uint80 ethRound,\\n      uint80 btcRound,\\n      int256 ethPrice,\\n      int256 btcPrice\\n    )\\n  {\\n    (ethRound, ethPrice, , , ) = AggregatorV3Interface(ethMarketCapFeed).latestRoundData();\\n    (btcRound, btcPrice, , , ) = AggregatorV3Interface(btcMarketCapFeed).latestRoundData();\\n  }\\n\\n  function _dominance(int256 _ethMarketCap, int256 _btcMarketCap) internal view returns (uint128) {\\n    // reverts if btc market cap == 0\\n    return uint128(uint256((_ethMarketCap * 1e20) / _btcMarketCap));\\n  }\\n\\n  function getLatestPrice() external view override returns (int256) {\\n    return int256(uint256(priceData.price));\\n  }\\n\\n  function updatePrice() external override returns (int256) {\\n    (uint80 _ethRound, uint80 _btcRound, int256 _ethMarketCap, int256 _btcMarketCap) = _feedData();\\n\\n    if (_ethRound == priceData.lastRoundEth || _btcRound == priceData.lastRoundBtc) {\\n      return int256(uint256(priceData.price));\\n    }\\n\\n    uint128 price = _dominance(_ethMarketCap, _btcMarketCap);\\n    priceData.price = price;\\n    priceData.lastRoundEth = _ethRound;\\n    priceData.lastRoundBtc = _btcRound;\\n\\n    return int256(uint256(price));\\n  }\\n}\\n\",\"keccak256\":\"0x35cc780040d4605e9c5f64d25f10fb94cad7439c6c0af75b37d8294379ccec41\",\"license\":\"BUSL-1.1\"}},\"version\":1}",
+  "bytecode": "0x60806040523480156200001157600080fd5b5060405162000a1738038062000a178339810160408190526200003491620003ca565b600080546001600160a01b038085166001600160a01b0319928316179092556001805492841692909116821790556040805163313ce56760e01b8152905163313ce56791600480820192602092909190829003018186803b1580156200009957600080fd5b505afa158015620000ae573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000d4919062000455565b60ff1660008054906101000a90046001600160a01b03166001600160a01b031663313ce5676040518163ffffffff1660e01b815260040160206040518083038186803b1580156200012457600080fd5b505afa15801562000139573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906200015f919062000455565b60ff1614620001be5760405162461bcd60e51b815260206004820152602160248201527f446563696d616c7320666f722066656564732061726520646966666572656e746044820152602160f81b606482015260840160405180910390fd5b6000808080620001cd62000247565b9350935093509350620001e782826200036a60201b60201c565b600380546001600160801b03929092166001600160801b03199092169190911790555050600280546001600160501b039283166a0100000000000000000000026001600160a01b03199091169390921692909217179055506200055b9050565b60008060008060008054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a06040518083038186803b1580156200029a57600080fd5b505afa158015620002af573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620002d5919062000401565b505060015460408051633fabe5a360e21b815290519498509295506001600160a01b03169263feaf968c926004808201935060a09291829003018186803b1580156200032057600080fd5b505afa15801562000335573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906200035b919062000401565b50969792965093945092509050565b600081620003828468056bc75e2d63100000620004b6565b6200038e919062000478565b9392505050565b80516001600160a01b0381168114620003ad57600080fd5b919050565b80516001600160501b0381168114620003ad57600080fd5b60008060408385031215620003dd578182fd5b620003e88362000395565b9150620003f86020840162000395565b90509250929050565b600080600080600060a0868803121562000419578081fd5b6200042486620003b2565b94506020860151935060408601519250606086015191506200044960808701620003b2565b90509295509295909350565b60006020828403121562000467578081fd5b815160ff811681146200038e578182fd5b6000826200049457634e487b7160e01b81526012600452602481fd5b600160ff1b821460001984141615620004b157620004b162000545565b500590565b60006001600160ff1b0381841382841380821686840486111615620004df57620004df62000545565b600160ff1b8487128281168783058912161562000500576200050062000545565b8587129250878205871284841616156200051e576200051e62000545565b8785058712818416161562000537576200053762000545565b505050929093029392505050565b634e487b7160e01b600052601160045260246000fd5b6104ac806200056b6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063646d87d81461005c578063673a7e281461008c57806376b33c9e146100a25780638e15f473146100b5578063e61a5fe4146100c6575b600080fd5b60005461006f906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b610094610121565b604051908152602001610083565b60015461006f906001600160a01b031681565b6003546001600160801b0316610094565b6002546003546100f2916001600160501b0380821692600160501b90920416906001600160801b031683565b604080516001600160501b0394851681529390921660208401526001600160801b031690820152606001610083565b60008060008060006101316101f6565b600254939750919550935091506001600160501b038086169116148061016b57506002546001600160501b03848116600160501b90920416145b156101885750506003546001600160801b031692506101f3915050565b60006101948383610311565b600380546001600160801b039092166fffffffffffffffffffffffffffffffff1990921682179055600280546001600160501b03968716600160501b026001600160a01b03199091169690971695909517959095179093555091925050505b90565b60008060008060008054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a06040518083038186803b15801561024857600080fd5b505afa15801561025c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102809190610354565b505060015460408051633fabe5a360e21b815290519498509295506001600160a01b03169263feaf968c926004808201935060a09291829003018186803b1580156102ca57600080fd5b505afa1580156102de573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103029190610354565b50969792965093945092509050565b6000816103278468056bc75e2d631000006103dd565b61033191906103a3565b9392505050565b80516001600160501b038116811461034f57600080fd5b919050565b600080600080600060a0868803121561036b578081fd5b61037486610338565b945060208601519350604086015192506060860151915061039760808701610338565b90509295509295909350565b6000826103be57634e487b7160e01b81526012600452602481fd5b600160ff1b8214600019841416156103d8576103d8610460565b500590565b60006001600160ff1b038184138284138082168684048611161561040357610403610460565b600160ff1b8487128281168783058912161561042157610421610460565b85871292508782058712848416161561043c5761043c610460565b8785058712818416161561045257610452610460565b505050929093029392505050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212206d649eef03961841b6e2b580f0c4238dbe2c55935138b5cffc5b4fea515cfb4464736f6c63430008030033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063646d87d81461005c578063673a7e281461008c57806376b33c9e146100a25780638e15f473146100b5578063e61a5fe4146100c6575b600080fd5b60005461006f906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b610094610121565b604051908152602001610083565b60015461006f906001600160a01b031681565b6003546001600160801b0316610094565b6002546003546100f2916001600160501b0380821692600160501b90920416906001600160801b031683565b604080516001600160501b0394851681529390921660208401526001600160801b031690820152606001610083565b60008060008060006101316101f6565b600254939750919550935091506001600160501b038086169116148061016b57506002546001600160501b03848116600160501b90920416145b156101885750506003546001600160801b031692506101f3915050565b60006101948383610311565b600380546001600160801b039092166fffffffffffffffffffffffffffffffff1990921682179055600280546001600160501b03968716600160501b026001600160a01b03199091169690971695909517959095179093555091925050505b90565b60008060008060008054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a06040518083038186803b15801561024857600080fd5b505afa15801561025c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102809190610354565b505060015460408051633fabe5a360e21b815290519498509295506001600160a01b03169263feaf968c926004808201935060a09291829003018186803b1580156102ca57600080fd5b505afa1580156102de573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103029190610354565b50969792965093945092509050565b6000816103278468056bc75e2d631000006103dd565b61033191906103a3565b9392505050565b80516001600160501b038116811461034f57600080fd5b919050565b600080600080600060a0868803121561036b578081fd5b61037486610338565b945060208601519350604086015192506060860151915061039760808701610338565b90509295509295909350565b6000826103be57634e487b7160e01b81526012600452602481fd5b600160ff1b8214600019841416156103d8576103d8610460565b500590565b60006001600160ff1b038184138284138082168684048611161561040357610403610460565b600160ff1b8487128281168783058912161561042157610421610460565b85871292508782058712848416161561043c5761043c610460565b8785058712818416161561045257610452610460565b505050929093029392505050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212206d649eef03961841b6e2b580f0c4238dbe2c55935138b5cffc5b4fea515cfb4464736f6c63430008030033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 20260,
+        "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+        "label": "ethMarketCapFeed",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 20262,
+        "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+        "label": "btcMarketCapFeed",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      },
+      {
+        "astId": 20272,
+        "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+        "label": "priceData",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_struct(PriceData)20269_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_struct(PriceData)20269_storage": {
+        "encoding": "inplace",
+        "label": "struct OracleManagerFlipp3ning.PriceData",
+        "members": [
+          {
+            "astId": 20264,
+            "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+            "label": "lastRoundEth",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint80"
+          },
+          {
+            "astId": 20266,
+            "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+            "label": "lastRoundBtc",
+            "offset": 10,
+            "slot": "0",
+            "type": "t_uint80"
+          },
+          {
+            "astId": 20268,
+            "contract": "contracts/oracles/OracleManagerFlipp3ning.sol:OracleManagerFlipp3ning",
+            "label": "price",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint128"
+          }
+        ],
+        "numberOfBytes": "64"
+      },
+      "t_uint128": {
+        "encoding": "inplace",
+        "label": "uint128",
+        "numberOfBytes": "16"
+      },
+      "t_uint80": {
+        "encoding": "inplace",
+        "label": "uint80",
+        "numberOfBytes": "10"
+      }
+    }
+  }
+}
