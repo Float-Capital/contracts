@@ -12,7 +12,7 @@ type allContracts = {
 
 let runTestTransactions =
     (
-      {longShort, treasury, paymentToken},
+      {longShort, treasury, paymentToken, staker},
       _deploymentArgs: Hardhat.hardhatDeployArgument,
     ) => {
   let%Await loadedAccounts = Ethers.getSigners();
@@ -62,7 +62,7 @@ let runTestTransactions =
   let longMintAmount = bnFromString("10000000000000000000");
   let shortMintAmount = longMintAmount->div(bnFromInt(2));
   let redeemShortAmount = shortMintAmount->div(bnFromInt(2));
-  let longStakeAmount = bnFromInt(1);
+  let longStakeAmount = bnFromString("100000000000000000");
 
   let priceAndStateUpdate = () => {
     let%AwaitThen _ =
@@ -158,6 +158,23 @@ let runTestTransactions =
         ~longShort,
         ~marketIndex=_,
         ~user=user1,
+      ),
+    );
+  let%AwaitThen _ = priceAndStateUpdate();
+
+  let longShiftAmount = longStakeAmount->div(twoBn);
+
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      shiftStakeNextPriceWithSystemUpdate(
+        ~amount=longShiftAmount,
+        ~marketIndex=_,
+        ~longShort,
+        ~staker,
+        ~isShiftFromLong=true,
+        ~user=user1,
+        ~admin,
       ),
     );
 

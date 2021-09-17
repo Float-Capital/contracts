@@ -94,6 +94,15 @@ function redeemNextPrice(amount, marketIndex, longShort, user, isLong) {
   return Curry._3(redeemFunction, longShort.connect(user), marketIndex, amount);
 }
 
+function shiftStakeNextPriceWithSystemUpdate(amount, isShiftFromLong, marketIndex, longShort, staker, user, admin) {
+  console.log("Amount to shift is", Globals.bnToString(amount));
+  return LetOps.AwaitThen.let_(staker.connect(user).shiftTokens(amount, marketIndex, isShiftFromLong), (function (param) {
+                return LetOps.AwaitThen.let_(setOracleManagerPrice(longShort, marketIndex, admin), (function (param) {
+                              return longShort.connect(admin).updateSystemState(marketIndex);
+                            }));
+              }));
+}
+
 function shiftFromShortNextPriceWithSystemUpdate(amount, marketIndex, longShort, user, admin) {
   return LetOps.AwaitThen.let_(longShort.connect(user).shiftPositionFromShortNextPrice(marketIndex, amount), (function (param) {
                 return LetOps.AwaitThen.let_(setOracleManagerPrice(longShort, marketIndex, admin), (function (param) {
@@ -394,6 +403,7 @@ exports.executeOnMarkets = executeOnMarkets;
 exports.setOracleManagerPrice = setOracleManagerPrice;
 exports.redeemShortNextPriceWithSystemUpdate = redeemShortNextPriceWithSystemUpdate;
 exports.redeemNextPrice = redeemNextPrice;
+exports.shiftStakeNextPriceWithSystemUpdate = shiftStakeNextPriceWithSystemUpdate;
 exports.shiftFromShortNextPriceWithSystemUpdate = shiftFromShortNextPriceWithSystemUpdate;
 exports.shiftFromLongNextPriceWithSystemUpdate = shiftFromLongNextPriceWithSystemUpdate;
 exports.mintLongNextPriceWithSystemUpdate = mintLongNextPriceWithSystemUpdate;

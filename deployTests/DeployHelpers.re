@@ -95,6 +95,30 @@ let redeemNextPrice = (~amount, ~marketIndex, ~longShort, ~user, ~isLong) => {
   ->redeemFunction(~marketIndex, ~tokens_redeem=amount);
 };
 
+let shiftStakeNextPriceWithSystemUpdate =
+    (
+      ~amount,
+      ~isShiftFromLong,
+      ~marketIndex,
+      ~longShort,
+      ~staker,
+      ~user,
+      ~admin,
+    ) => {
+  Js.log2("Amount to shift is", amount->bnToString);
+  let%AwaitThen _ =
+    staker
+    ->ContractHelpers.connect(~address=user)
+    ->Staker.shiftTokens(
+        ~isShiftFromLong,
+        ~marketIndex,
+        ~amountSyntheticTokensToShift=amount,
+      );
+  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
+  longShort
+  ->ContractHelpers.connect(~address=admin)
+  ->LongShort.updateSystemState(~marketIndex);
+};
 let shiftFromShortNextPriceWithSystemUpdate =
     (~amount, ~marketIndex, ~longShort, ~user, ~admin) => {
   let%AwaitThen _ =

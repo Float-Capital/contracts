@@ -17,7 +17,7 @@
     "res:clean": "rescript clean",
     "res:build": "rescript",
     "res:start": "rescript build -w",
-    "clean": "rm -rf build/contracts/* artifacts cache",
+    "clean": "rm -rf artifacts cache deployments/ganache",
     "lint-contracts": "solhint 'contracts/**/*.sol' --fix",
     "format-contracts": "prettier --write 'contracts/**/*.sol'",
     "hardhat": "hardhat",
