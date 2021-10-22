@@ -1,7 +1,9 @@
 {
   "name": "float-contracts",
   "namespace": false,
-  "bs-dependencies": [],
+  "bs-dependencies": [
+    "@ryyppy/rescript-promise"
+  ],
   "ppx-flags": [
     "bs-let/ppx"
   ],

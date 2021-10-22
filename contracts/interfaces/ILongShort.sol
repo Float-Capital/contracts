@@ -63,7 +63,20 @@ interface ILongShort {
 
   function syntheticTokens(uint32, bool) external view returns (address);
 
+  function assetPrice(uint32) external view returns (int256);
+
+  function oracleManagers(uint32) external view returns (address);
+
   function marketUpdateIndex(uint32) external view returns (uint256);
+
+  function batched_amountPaymentToken_deposit(uint32, bool) external view returns (uint256);
+
+  function batched_amountSyntheticToken_redeem(uint32, bool) external view returns (uint256);
+
+  function batched_amountSyntheticToken_toShiftAwayFrom_marketSide(uint32, bool)
+    external
+    view
+    returns (uint256);
 
   function syntheticToken_priceSnapshot(
     uint32,

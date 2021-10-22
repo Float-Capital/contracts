@@ -94,31 +94,28 @@ let bnCloseTo: (
 
 type eventCheck
 let callEmitEvents: (
-  ~call: JsPromise.t<ContractHelpers.transaction>,
+  ~call: Promise.t<ContractHelpers.transaction>,
   ~contract: ContractHelpers.t,
   ~eventName: string,
 ) => eventCheck = %raw(`(call, contract, eventName) => expect(call).to.emit(contract, eventName)`)
-@send external withArgs0: eventCheck => JsPromise.t<unit> = "withArgs"
-@send external withArgs1: (eventCheck, 'a) => JsPromise.t<unit> = "withArgs"
-@send external withArgs2: (eventCheck, 'a, 'b) => JsPromise.t<unit> = "withArgs"
-@send external withArgs3: (eventCheck, 'a, 'b, 'c) => JsPromise.t<unit> = "withArgs"
-@send external withArgs4: (eventCheck, 'a, 'b, 'c, 'd) => JsPromise.t<unit> = "withArgs"
-@send external withArgs5: (eventCheck, 'a, 'b, 'c, 'd, 'e) => JsPromise.t<unit> = "withArgs"
+@send external withArgs0: eventCheck => Promise.t<unit> = "withArgs"
+@send external withArgs1: (eventCheck, 'a) => Promise.t<unit> = "withArgs"
+@send external withArgs2: (eventCheck, 'a, 'b) => Promise.t<unit> = "withArgs"
+@send external withArgs3: (eventCheck, 'a, 'b, 'c) => Promise.t<unit> = "withArgs"
+@send external withArgs4: (eventCheck, 'a, 'b, 'c, 'd) => Promise.t<unit> = "withArgs"
+@send external withArgs5: (eventCheck, 'a, 'b, 'c, 'd, 'e) => Promise.t<unit> = "withArgs"
 
 @send external withArgs5Return: (eventCheck, 'a, 'b, 'c, 'd, 'e) => eventCheck = "withArgs"
 
-@send external withArgs6: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f) => JsPromise.t<unit> = "withArgs"
-@send external withArgs7: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g) => JsPromise.t<unit> = "withArgs"
+@send external withArgs6: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f) => Promise.t<unit> = "withArgs"
+@send external withArgs7: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g) => Promise.t<unit> = "withArgs"
 @send
-external withArgs8: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h) => JsPromise.t<unit> = "withArgs"
+external withArgs8: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h) => Promise.t<unit> = "withArgs"
 
 @send
-external withArgs9: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) => JsPromise.t<unit> =
-  "withArgs"
+external withArgs9: (eventCheck, 'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) => Promise.t<unit> = "withArgs"
 
-let expectToNotEmit: eventCheck => JsPromise.t<
-  unit,
-> = %raw(`eventCheck => {  let shouldRevert = true;
+let expectToNotEmit: eventCheck => Promise.t<unit> = %raw(`eventCheck => {  let shouldRevert = true;
   return (eventCheck
     .catch(() =>
       shouldRevert = false
@@ -128,21 +125,21 @@ let expectToNotEmit: eventCheck => JsPromise.t<
 }`)
 
 let expectRevertNoReason: (
-  ~transaction: JsPromise.t<ContractHelpers.transaction>,
-) => JsPromise.t<unit> = %raw(`(transaction) => expect(transaction).to.be.reverted`)
+  ~transaction: Promise.t<ContractHelpers.transaction>,
+) => Promise.t<unit> = %raw(`(transaction) => expect(transaction).to.be.reverted`)
 let expectRevert: (
-  ~transaction: JsPromise.t<ContractHelpers.transaction>,
+  ~transaction: Promise.t<ContractHelpers.transaction>,
   ~reason: string,
-) => JsPromise.t<
+) => Promise.t<
   unit,
 > = %raw(`(transaction, reason) => expect(transaction).to.be.revertedWith(reason)`)
 
 let changeBalance: (
-  ~transaction: unit => JsPromise.t<ContractHelpers.transaction>,
+  ~transaction: unit => Promise.t<ContractHelpers.transaction>,
   ~token: ContractHelpers.t,
   ~to_: Ethers.ethAddress,
   ~amount: Ethers.BigNumber.t,
-) => JsPromise.t<
+) => Promise.t<
   unit,
 > = %raw(`(transaction, token, to, amount) => expect(transaction).to.changeTokenBalance(token, to, amount)`)
 // TODO: implement changeBalanceMulti to test transactions that change the balance of multiple accounts
@@ -150,17 +147,17 @@ let changeBalance: (
 
 let expectToBeAddress: (
   ~address: Ethers.ethAddress,
-) => JsPromise.t<unit> = %raw(`(address) => expect(address).to.be.properAddress`)
+) => Promise.t<unit> = %raw(`(address) => expect(address).to.be.properAddress`)
 let expectToBePrivateKey: (
   ~privateKey: string,
-) => JsPromise.t<unit> = %raw(`(privateKey) => expect(privateKey).to.be.properAddress`)
+) => Promise.t<unit> = %raw(`(privateKey) => expect(privateKey).to.be.properAddress`)
 let expectToBeHex: (
   ~hexStr: string,
   ~length: int,
-) => JsPromise.t<unit> = %raw(`(hexStr, hexLength) => expect(hexStr).to.be.properHex(hexLength)`)
+) => Promise.t<unit> = %raw(`(hexStr, hexLength) => expect(hexStr).to.be.properHex(hexLength)`)
 let expectHexEqual: (
   ~hex1: string,
   ~hex2: string,
-) => JsPromise.t<unit> = %raw(`(hex1, hex2) => expect(hex1).to.be.hexEqual(hex2)`)
+) => Promise.t<unit> = %raw(`(hex1, hex2) => expect(hex1).to.be.hexEqual(hex2)`)
 
 let expectTrue: bool => unit = %raw(`(value) => expect(value).to.be.true`)

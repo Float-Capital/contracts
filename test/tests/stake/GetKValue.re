@@ -9,7 +9,7 @@ let test =
     ) => {
   let marketIndex = 2;
 
-  let prom: ref(JsPromise.t(Staker.Exposed._getKValueExposedReturn)) =
+  let prom: ref(Promise.t(Staker.Exposed._getKValueExposedReturn)) =
     ref(None->Obj.magic);
 
   let multiplier =

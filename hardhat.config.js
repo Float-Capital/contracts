@@ -107,7 +107,7 @@ module.exports = {
       // "https://matic-mainnet.chainstacklabs.com",
       url: polygonProviderUrl || "https://matic-mainnet-full-rpc.bwarelabs.com/",
       accounts: { mnemonic },
-      gasPrice: 10000000000,
+      gasPrice: 60000000000,
       gas: 10000000,
     },
     mumbai: {

@@ -36,6 +36,8 @@ interface IStaker {
 
   event StakeWithdrawn(address user, address token, uint256 amount);
 
+  event StakeWithdrawnWithFees(address user, address token, uint256 amount, uint256 amountFees);
+
   // Note: the `amountFloatMinted` isn't strictly needed by the graph, but it is good to add it to validate calculations are accurate.
   event FloatMinted(address user, uint32 marketIndex, uint256 amountFloatMinted);
 
@@ -101,4 +103,19 @@ interface IStaker {
     uint32 marketIndex,
     bool isShiftFromLong
   ) external;
+
+  function latestRewardIndex(uint32 marketIndex) external view returns (uint256);
+
+  // TODO: couldn't get this to work!
+  function accumulativeFloatPerSyntheticTokenSnapshots(
+    uint32 marketIndex,
+    uint256 latestUpdateIndex
+  )
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    );
 }

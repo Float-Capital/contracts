@@ -57,14 +57,14 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   /* ══════ Market specific ══════ */
   mapping(uint32 => bool) public marketExists;
 
-  mapping(uint32 => int256) public assetPrice;
+  mapping(uint32 => int256) public override assetPrice;
   mapping(uint32 => uint256) public override marketUpdateIndex;
   mapping(uint32 => uint256) public marketTreasurySplitGradient_e18;
   mapping(uint32 => uint256) public marketLeverage_e18;
 
   mapping(uint32 => address) public paymentTokens;
   mapping(uint32 => address) public yieldManagers;
-  mapping(uint32 => address) public oracleManagers;
+  mapping(uint32 => address) public override oracleManagers;
   uint256[45] private __marketStateGap;
 
   /* ══════ Market + position (long/short) specific ══════ */
@@ -76,10 +76,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     public
     override syntheticToken_priceSnapshot;
 
-  mapping(uint32 => mapping(bool => uint256)) public batched_amountPaymentToken_deposit;
-  mapping(uint32 => mapping(bool => uint256)) public batched_amountSyntheticToken_redeem;
+  mapping(uint32 => mapping(bool => uint256)) public override batched_amountPaymentToken_deposit;
+  mapping(uint32 => mapping(bool => uint256)) public override batched_amountSyntheticToken_redeem;
   mapping(uint32 => mapping(bool => uint256))
-    public batched_amountSyntheticToken_toShiftAwayFrom_marketSide;
+    public
+    override batched_amountSyntheticToken_toShiftAwayFrom_marketSide;
   uint256[45] private __marketPositonStateGap;
 
   /* ══════ User specific ══════ */
@@ -96,6 +97,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     ║          MODIFIERS          ║
     ╚═════════════════════════════╝*/
 
+  // This is used for testing (as opposed to onlyRole)
   function adminOnlyModifierLogic() internal virtual {
     _checkRole(ADMIN_ROLE, msg.sender);
   }
@@ -148,7 +150,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     address _tokenFactory,
     address _staker,
     address _gems
-  ) external virtual initializer {
+  ) public virtual initializer {
     require(
       _admin != address(0) &&
         _tokenFactory != address(0) &&
@@ -379,6 +381,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
 
     _seedMarketInitially(initialMarketSeedForEachMarketSide, marketIndex);
 
+    require(marketLeverage <= 50e18 && marketLeverage >= 1e17, "Incorrect leverage");
     marketLeverage_e18[marketIndex] = marketLeverage;
 
     // Add new staker funds with fresh synthetic tokens.
@@ -733,25 +736,16 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     bool assetPriceHasChanged = assetPrice[marketIndex] != newAssetPrice;
 
     if (assetPriceHasChanged) {
-      uint256 syntheticTokenPrice_inPaymentTokens_long = syntheticToken_priceSnapshot[marketIndex][
-        true
-      ][currentMarketIndex];
-      uint256 syntheticTokenPrice_inPaymentTokens_short = syntheticToken_priceSnapshot[marketIndex][
-        false
-      ][currentMarketIndex];
-      // if there is a price change and the 'staker' contract has pending updates, push the stakers price snapshot index to the staker
-      // (so the staker can handle its internal accounting)
-
       (
         uint256 newLongPoolValue,
         uint256 newShortPoolValue
       ) = _claimAndDistributeYieldThenRebalanceMarket(marketIndex, newAssetPrice);
 
-      syntheticTokenPrice_inPaymentTokens_long = _getSyntheticTokenPrice(
+      uint256 syntheticTokenPrice_inPaymentTokens_long = _getSyntheticTokenPrice(
         newLongPoolValue,
         ISyntheticToken(syntheticTokens[marketIndex][true]).totalSupply()
       );
-      syntheticTokenPrice_inPaymentTokens_short = _getSyntheticTokenPrice(
+      uint256 syntheticTokenPrice_inPaymentTokens_short = _getSyntheticTokenPrice(
         newShortPoolValue,
         ISyntheticToken(syntheticTokens[marketIndex][false]).totalSupply()
       );
@@ -862,6 +856,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
+    require(amount > 0, "Mint amount must be greater than 0");
     _transferPaymentTokensFromUserToYieldManager(marketIndex, amount);
 
     batched_amountPaymentToken_deposit[marketIndex][isLong] += amount;
@@ -905,6 +900,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
+    require(tokens_redeem > 0, "Redeem amount must be greater than 0");
     ISyntheticToken(syntheticTokens[marketIndex][isLong]).transferFrom(
       msg.sender,
       address(this),
@@ -954,12 +950,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
-    require(
-      ISyntheticToken(syntheticTokens[marketIndex][isShiftFromLong]).transferFrom(
-        msg.sender,
-        address(this),
-        amountSyntheticTokensToShift
-      )
+    require(amountSyntheticTokensToShift > 0, "Shift amount must be greater than 0");
+    ISyntheticToken(syntheticTokens[marketIndex][isShiftFromLong]).transferFrom(
+      msg.sender,
+      address(this),
+      amountSyntheticTokensToShift
     );
 
     userNextPrice_syntheticToken_toShiftAwayFrom_marketSide[marketIndex][isShiftFromLong][

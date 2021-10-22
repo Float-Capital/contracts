@@ -16,7 +16,7 @@ let test =
 
     let user = Helpers.randomAddress();
 
-    let promiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
+    let promiseRef: ref(Promise.t(ContractHelpers.transaction)) =
       ref(None->Obj.magic);
 
     let setup = (~floatToMintLong, ~floatToMintShort) => {

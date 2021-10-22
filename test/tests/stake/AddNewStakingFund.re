@@ -19,8 +19,8 @@ let test =
 
     let timestampRef = ref(0);
 
-    let promiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
-      ref(()->JsPromise.resolve->Obj.magic);
+    let promiseRef: ref(Promise.t(ContractHelpers.transaction)) =
+      ref(()->Promise.resolve->Obj.magic);
 
     before_once'(() => {
       let%Await _ =

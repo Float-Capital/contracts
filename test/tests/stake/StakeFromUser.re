@@ -23,7 +23,7 @@ let test =
     let (userAmountStaked, userAmountToStake) =
       Helpers.Tuple.make2(Helpers.randomTokenAmount); // will be at least two
 
-    let promiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
+    let promiseRef: ref(Promise.t(ContractHelpers.transaction)) =
       ref(None->Obj.magic);
 
     let setup = (~userLastRewardIndex, ~latestRewardIndex) => {

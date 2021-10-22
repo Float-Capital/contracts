@@ -42,10 +42,10 @@ contract FloatToken is
    @param stakerAddress The staker contract that controls minting of the token
    */
   function initialize(
-    string calldata name,
-    string calldata symbol,
+    string memory name,
+    string memory symbol,
     address stakerAddress
-  ) external initializer {
+  ) public initializer {
     __ERC20_init(name, symbol);
     __ERC20Burnable_init();
     __Pausable_init();

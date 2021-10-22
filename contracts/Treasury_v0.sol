@@ -24,7 +24,7 @@ contract Treasury_v0 is AccessControlledAndUpgradeable {
     address _paymentToken,
     address _floatToken,
     address _longShort
-  ) external initializer {
+  ) public initializer {
     _AccessControlledAndUpgradeable_init(_admin);
     paymentToken = _paymentToken;
     floatToken = _floatToken;

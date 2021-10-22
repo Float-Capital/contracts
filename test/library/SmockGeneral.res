@@ -10,10 +10,10 @@ external expect: 'a => expectation = "expect"
 external toHaveCallCount: (expectation, int) => unit = "callCount"
 
 @module("@defi-wonderland/smock") @scope("smock")
-external getMockContractFactory: string => JsPromise.t<'a> = "mock"
+external getMockContractFactory: string => Promise.t<'a> = "mock"
 
 @send
-external setVariableRaw: ('smockedContract, ~name: string, ~value: 'a) => JsPromise.t<unit> =
+external setVariableRaw: ('smockedContract, ~name: string, ~value: 'a) => Promise.t<unit> =
   "setVariable"
 
 @send

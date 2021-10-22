@@ -25,7 +25,7 @@ contract GEMS is AccessControlledAndUpgradeable {
     address _admin,
     address _longShort,
     address _staker
-  ) external initializer {
+  ) public initializer {
     _AccessControlledAndUpgradeable_init(_admin);
     _setupRole(GEM_ROLE, _longShort);
     _setupRole(GEM_ROLE, _staker);
@@ -49,8 +49,12 @@ contract GEMS is AccessControlledAndUpgradeable {
         }
 
         lastAction[user] = blocktimestamp;
+        emit GemsCollected(user, gems[user], streak[user]);
       }
-      emit GemsCollected(user, gems[user], streak[user]);
     }
+  }
+
+  function balanceOf(address account) public view returns (uint256) {
+    return gems[account];
   }
 }

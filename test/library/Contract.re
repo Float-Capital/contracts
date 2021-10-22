@@ -12,7 +12,7 @@ module PaymentTokenHelpers = {
       ) =>
     t
     ->ERC20Mock.mint(~amount, ~_to=user.address)
-    ->JsPromise.then_(_ => {
+    ->promiseThen(_ => {
         t->connect(~address=user)->ERC20Mock.approve(~amount, ~spender)
       });
 };
@@ -20,11 +20,11 @@ module PaymentTokenHelpers = {
 module DataFetchers = {
   let marketIndexOfSynth =
       (longShort: LongShort.t, ~syntheticToken: SyntheticToken.t)
-      : JsPromise.t(int) =>
+      : Promise.t(int) =>
     longShort
     ->LongShort.staker
-    ->JsPromise.then_(Staker.at)
-    ->JsPromise.then_(Staker.marketIndexOfToken(_, syntheticToken.address));
+    ->promiseThen(Staker.at)
+    ->promiseThen(Staker.marketIndexOfToken(_, syntheticToken.address));
 };
 
 module LongShortHelpers = {

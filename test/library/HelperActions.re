@@ -86,7 +86,7 @@ let stakeRandomlyInMarkets =
     ) =>
   [|marketsToStakeIn->Array.getUnsafe(0)|]
   ->Belt.Array.reduce(
-      JsPromise.resolve(([||], [||])),
+      Promise.resolve(([||], [||])),
       (
         currentValues,
         {paymentToken, longSynth, shortSynth, marketIndex, oracleManager},
@@ -201,7 +201,7 @@ let stakeRandomlyInBothSidesOfMarket =
       ~longShort: LongShort.t,
     ) =>
   marketsToStakeIn->Belt.Array.reduce(
-    JsPromise.resolve(),
+    Promise.resolve(),
     (
       prevPromise,
       {paymentToken, marketIndex, longSynth, shortSynth, oracleManager},

@@ -75,7 +75,6 @@ let testUnit =
     it(
       "calls _mintAccumulatedFloatAndExecuteOutstandingShifts (via modifier) with the correct arguments if the user has a 'confirmed' shift that needs to be settled",
       () => {
-        let user = accounts.contents->Array.getUnsafe(0).address;
         let userNextPrice_stakedActionIndex = Helpers.randomInteger();
         let latestRewardIndex =
           userNextPrice_stakedActionIndex->add(Helpers.randomInteger());
@@ -94,8 +93,7 @@ let testUnit =
           );
 
         StakerSmocked.InternalMock._updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
-          marketIndex,
-          user,
+          marketIndex: marketIndex,
         });
       },
     );

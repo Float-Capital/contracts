@@ -50,9 +50,10 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   uint256[45] private __synthStateGap;
 
   /* ══════ Reward specific ══════ */
-  mapping(uint32 => uint256) public latestRewardIndex; // This is synced to be the same as LongShort
+  mapping(uint32 => uint256) public override latestRewardIndex; // This is synced to be the same as LongShort
   mapping(uint32 => mapping(uint256 => AccumulativeIssuancePerStakedSynthSnapshot))
-    public accumulativeFloatPerSyntheticTokenSnapshots;
+    public
+    override accumulativeFloatPerSyntheticTokenSnapshots;
   struct AccumulativeIssuancePerStakedSynthSnapshot {
     uint256 timestamp;
     uint256 accumulativeFloatPerSyntheticToken_long;
@@ -109,8 +110,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   }
 
   function _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(
-    uint32 marketIndex,
-    address user
+    uint32 marketIndex
   ) internal virtual {
     if (
       userNextPrice_stakedActionIndex[marketIndex][msg.sender] != 0 &&
@@ -121,10 +121,9 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   }
 
   modifier updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(
-    uint32 marketIndex,
-    address user
+    uint32 marketIndex
   ) {
-    _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, user);
+    _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex);
     _;
   }
 
@@ -156,7 +155,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     address _discountSigner,
     uint256 _floatPercentage,
     address _gems
-  ) external virtual initializer {
+  ) public virtual initializer {
     require(
       _admin != address(0) &&
         _longShort != address(0) &&
@@ -243,7 +242,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     // Required to ensure at least 3 digits of precision.
     require(
       totalLocked >> _safeExponentBitShifting > 100,
-      "bit shifting too lange for total locked"
+      "bit shifting too large for total locked"
     );
 
     balanceIncentiveCurve_exponent[marketIndex] = _balanceIncentiveCurve_exponent;
@@ -822,6 +821,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     onlyValidSynthetic(msg.sender)
     gemCollecting(from)
   {
+    require(amount > 0, "Stake amount must be greater than 0");
     uint32 marketIndex = marketIndexOfToken[msg.sender];
     ILongShort(longShort).updateSystemState(marketIndex);
 
@@ -858,10 +858,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     external
     virtual
     override
-    updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(
-      marketIndex,
-      msg.sender
-    )
+    updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex)
     gemCollecting(msg.sender)
   {
     require(amountSyntheticTokensToShift > 0, "No zero shifts.");
@@ -914,12 +911,14 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     address token,
     uint256 amount
   ) internal virtual gemCollecting(msg.sender) {
+    require(amount > 0, "Withdraw amount must be greater than 0");
     uint256 amountFees = (amount * marketUnstakeFee_e18[marketIndex]) / 1e18;
 
     ISyntheticToken(token).transfer(floatTreasury, amountFees);
     ISyntheticToken(token).transfer(msg.sender, amount - amountFees);
 
     emit StakeWithdrawn(msg.sender, token, amount);
+    emit StakeWithdrawnWithFees(msg.sender, token, amount, amountFees);
   }
 
   function _withdrawPrepLogic(
@@ -1019,6 +1018,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     bytes32 r,
     bytes32 s
   ) external gemCollecting(msg.sender) {
+    require(withdrawAmount > 0, "Withdraw amount must be greater than 0");
     address discountSigner = ecrecover(
       _hasher(
         marketIndex,
@@ -1048,5 +1048,6 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     ISyntheticToken(token).transfer(floatTreasury, amountFees);
     ISyntheticToken(token).transfer(msg.sender, withdrawAmount - amountFees);
     emit StakeWithdrawn(msg.sender, token, withdrawAmount);
+    emit StakeWithdrawnWithFees(msg.sender, token, withdrawAmount, amountFees);
   }
 }

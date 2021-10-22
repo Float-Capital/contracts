@@ -10,7 +10,7 @@ contract FloatCapital_v0 is AccessControlledAndUpgradeable {
     ║       CONTRACT SETUP        ║
     ╚═════════════════════════════╝*/
 
-  function initialize(address _admin) external initializer {
+  function initialize(address _admin) public initializer {
     _AccessControlledAndUpgradeable_init(_admin);
   }
 

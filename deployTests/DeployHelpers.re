@@ -56,7 +56,7 @@ let stakeSynthLong = (~amount, ~longShort, ~marketIndex, ~user) => {
 let executeOnMarkets =
     (marketIndexes: array(int), functionToExecute: int => Js.Promise.t('a)) => {
   marketIndexes->Array.reduce(
-    JsPromise.resolve(),
+    Promise.resolve(),
     (previousPromise, marketIndex) => {
       let%AwaitThen _ = previousPromise;
       functionToExecute(marketIndex);
@@ -654,7 +654,7 @@ let deployFlipp3ningPolygon =
 
   Js.log("a.5");
 
-  let kInitialMultiplier = bnFromString("2000000000000000000"); // 5x
+  let kInitialMultiplier = bnFromString("2000000000000000000"); // 2x
   let kPeriod = bnFromInt(5184000); // 60 days
 
   Js.log("a.6");
@@ -681,7 +681,161 @@ let deployFlipp3ningPolygon =
       ~initialMarketSeedForEachMarketSide,
       ~balanceIncentiveCurve_exponent=bnFromInt(5),
       ~balanceIncentiveCurve_equilibriumOffset=bnFromInt(0),
-      ~marketTreasurySplitGradient_e18=bnFromInt(1),
+      ~marketTreasurySplitGradient_e18=CONSTANTS.tenToThe18,
+      ~marketLeverage=bnFromInt(3)->mul(CONSTANTS.tenToThe18),
+    );
+};
+let deploy3TH_Polygon =
+    (
+      ~longShortInstance: LongShort.t,
+      ~stakerInstance: Staker.t,
+      ~treasuryInstance: Treasury_v0.t,
+      ~admin,
+      ~paymentToken: ERC20Mock.t,
+      ~ethUSDPriceFeedAddress: Ethers.ethAddress,
+      ~deployments: Hardhat.deployments_t,
+      ~namedAccounts: Hardhat.namedAccounts,
+    ) => {
+  let syntheticName = "Ether 3x";
+  let syntheticSymbol = "3TH";
+
+  let%AwaitThen latestMarket = longShortInstance->LongShort.latestMarket;
+  let newMarketIndex = latestMarket + 1;
+
+  let%AwaitThen syntheticTokenShort =
+    deployments->Hardhat.deploy(
+      ~name="SS" ++ syntheticSymbol,
+      ~arguments={
+        "contract": "SyntheticTokenUpgradeable",
+        "from": namedAccounts.deployer,
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Short " ++ syntheticName,
+              "fs" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              false,
+            ),
+          },
+        },
+      },
+    );
+  let%AwaitThen syntheticTokenLong =
+    deployments->Hardhat.deploy(
+      ~name="SL" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "SyntheticTokenUpgradeable",
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Long " ++ syntheticName,
+              "fl" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              true,
+            ),
+          },
+        },
+      },
+    );
+
+  let%AwaitThen oracleManager =
+    deployments->Hardhat.deploy(
+      ~name="OracleManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "OracleManagerChainlink",
+        "args": (namedAccounts.admin, ethUSDPriceFeedAddress),
+      },
+    );
+  Js.log("a.1");
+  // https://polygonscan.com/address/0xd05e3E715d945B59290df0ae8eF85c1BdB684744#code
+  let aavePoolAddressProviderPolygon = "0xd05e3E715d945B59290df0ae8eF85c1BdB684744";
+  // https://polygonscan.com/address/0x27F8D03b3a2196956ED754baDc28D73be8830A6e#code
+  let aDaiPolygon = "0x27F8D03b3a2196956ED754baDc28D73be8830A6e";
+  // https://polygonscan.com/address/0x357D51124f59836DeD84c8a1730D72B749d8BC23#code
+  let aaveIncentivesControllerPolygon = "0x357D51124f59836DeD84c8a1730D72B749d8BC23";
+  Js.log("a.3");
+  let%AwaitThen yieldManager =
+    deployments->Hardhat.deploy(
+      ~name="YieldManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "contract": "YieldManagerAave_Implementation",
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              longShortInstance.address,
+              treasuryInstance.address,
+              paymentToken.address,
+              aDaiPolygon,
+              aavePoolAddressProviderPolygon,
+              aaveIncentivesControllerPolygon,
+              0,
+              admin.address,
+            ),
+          },
+        },
+      },
+    );
+  Js.log("a.4");
+  Js.log((
+    yieldManager.address,
+    syntheticTokenLong.address,
+    syntheticTokenShort.address,
+  ));
+  let%AwaitThen _ =
+    longShortInstance
+    ->ContractHelpers.connect(~address=admin)
+    ->LongShort.createNewSyntheticMarketExternalSyntheticTokens(
+        ~syntheticName,
+        ~syntheticSymbol,
+        ~longToken=syntheticTokenLong.address,
+        ~shortToken=syntheticTokenShort.address,
+        ~paymentToken=paymentToken.address,
+        ~oracleManager=oracleManager.address,
+        ~yieldManager=yieldManager.address,
+      );
+  Js.log("a.5");
+  let kInitialMultiplier = bnFromString("2000000000000000000"); // 2x
+  let kPeriod = bnFromInt(5184000); // 60 days
+  Js.log("a.6");
+  let unstakeFee_e18 = bnFromString("5000000000000000"); // 50 basis point unstake fee
+  let initialMarketSeedForEachMarketSide =
+    bnFromString("1000000000000000000");
+  let%AwaitThen _ =
+    paymentToken
+    ->ContractHelpers.connect(~address=admin)
+    ->ERC20Mock.approve(
+        ~spender=longShortInstance.address,
+        ~amount=initialMarketSeedForEachMarketSide->mul(bnFromInt(3)),
+      );
+  Js.log("a.7");
+  longShortInstance
+  ->ContractHelpers.connect(~address=admin)
+  ->LongShort.initializeMarket(
+      ~marketIndex=newMarketIndex,
+      ~kInitialMultiplier,
+      ~kPeriod,
+      ~unstakeFee_e18, // 50 basis point unstake fee
+      ~initialMarketSeedForEachMarketSide,
+      ~balanceIncentiveCurve_exponent=bnFromInt(5),
+      ~balanceIncentiveCurve_equilibriumOffset=bnFromInt(0),
+      ~marketTreasurySplitGradient_e18=CONSTANTS.tenToThe18,
       ~marketLeverage=bnFromInt(3)->mul(CONSTANTS.tenToThe18),
     );
 };

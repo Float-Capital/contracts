@@ -46,7 +46,7 @@ let generateTestData =
             ~isLong=true,
           );
 
-        ()->JsPromise.resolve;
+        ()->Promise.resolve;
       });
       it("below", () => {
         let {longShort, markets} = contracts.contents;
@@ -68,7 +68,7 @@ let generateTestData =
 
         let%AwaitThen (_, resultsBelow) =
           pricesBelow->Array.reduce(
-            (initialPrice, [||])->JsPromise.resolve,
+            (initialPrice, [||])->Promise.resolve,
             (lastPromise, _) => {
               let%AwaitThen (lastPrice, results) = lastPromise;
               let newPrice = lastPrice->sub(CONSTANTS.tenToThe18);
@@ -99,7 +99,7 @@ let generateTestData =
                 |]
                 ->Array.concat(results),
               )
-              ->JsPromise.resolve;
+              ->Promise.resolve;
             },
           );
         prices :=
@@ -112,7 +112,7 @@ let generateTestData =
                 initialAmountLong->Ethers.Utils.formatEther,
               ),
             |]);
-        ()->JsPromise.resolve;
+        ()->Promise.resolve;
       });
       it("above", () => {
         let {longShort, markets} = contracts.contents;
@@ -135,7 +135,7 @@ let generateTestData =
 
         let%AwaitThen (_, resultsAbove) =
           pricesAbove->Array.reduce(
-            (initialPrice, [||])->JsPromise.resolve,
+            (initialPrice, [||])->Promise.resolve,
             (lastPromise, _) => {
               let%AwaitThen (lastPrice, results) = lastPromise;
               let newPrice = lastPrice->add(CONSTANTS.tenToThe18);
@@ -164,7 +164,7 @@ let generateTestData =
                   ),
                 |]),
               )
-              ->JsPromise.resolve;
+              ->Promise.resolve;
             },
           );
         prices := prices.contents->Array.concat(resultsAbove);
@@ -176,7 +176,7 @@ let generateTestData =
               priceString ++ "\n" ++ price ++ "," ++ long ++ "," ++ short
             }),
         );
-        ()->JsPromise.resolve;
+        ()->Promise.resolve;
       });
     },
   );

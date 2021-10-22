@@ -17,7 +17,7 @@ let testUnit =
       let amountWithdrawn =
         amountStaked->div(Js.Math.random_int(1, 20)->bnFromInt);
       let fees = Helpers.randomRatio1e18();
-      let call: ref(JsPromise.t(ContractHelpers.transaction)) =
+      let call: ref(Promise.t(ContractHelpers.transaction)) =
         ref(None->Obj.magic);
       let connectedStaker: ref(Staker.t) = ref(None->Obj.magic);
 
@@ -53,8 +53,8 @@ let testUnit =
           let%AwaitThen _ = setup(amountStaked);
           call.contents;
         });
+        let fees = amountWithdrawn->mul(fees)->div(tenToThe18);
         it("calls transfer on the synthetic token with correct args", () => {
-          let fees = amountWithdrawn->mul(fees)->div(tenToThe18);
           contracts.contents.syntheticTokenSmocked
           ->SyntheticTokenSmocked.transferCallCheck({
               recipient: treasury,
@@ -95,10 +95,24 @@ let testUnit =
             ~contract=connectedStaker.contents->Obj.magic,
             ~eventName="StakeWithdrawn",
           )
-          ->Chai.withArgs3(
+          ->Chai.withArgs4(
               userWallet.contents.address,
               contracts.contents.syntheticTokenSmocked.address,
               amountWithdrawn,
+            )
+        );
+
+        it("emits a StakeWithdrawn event with correct args & fees", () =>
+          Chai.callEmitEvents(
+            ~call=call.contents,
+            ~contract=connectedStaker.contents->Obj.magic,
+            ~eventName="StakeWithdrawnWithFees",
+          )
+          ->Chai.withArgs4(
+              userWallet.contents.address,
+              contracts.contents.syntheticTokenSmocked.address,
+              amountWithdrawn,
+              fees,
             )
         );
       });

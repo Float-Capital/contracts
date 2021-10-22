@@ -21,6 +21,8 @@ let runTestTransactions =
   let user1 = loadedAccounts->Array.getUnsafe(2);
   let user2 = loadedAccounts->Array.getUnsafe(3);
   let user3 = loadedAccounts->Array.getUnsafe(4);
+  let user7 = loadedAccounts->Array.getUnsafe(8);
+  let user8 = loadedAccounts->Array.getUnsafe(9);
 
   let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user1);
   let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user2);
@@ -178,6 +180,126 @@ let runTestTransactions =
       ),
     );
 
+  let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user7);
+
+  let%AwaitThen _ = priceAndStateUpdate();
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintLongNextPriceWithSystemUpdate(
+        ~amount=bnFromInt(1),
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user1,
+        ~admin,
+      ),
+    );
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintShortNextPriceWithSystemUpdate(
+        ~amount=bnFromInt(1),
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user1,
+        ~admin,
+      ),
+    );
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintLongNextPriceWithSystemUpdate(
+        ~amount=bnFromInt(1),
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user2,
+        ~admin,
+      ),
+    );
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintLongNextPriceWithSystemUpdate(
+        ~amount=bnFromInt(1),
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user8,
+        ~admin,
+      ),
+    );
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintLongNextPriceWithSystemUpdate(
+        ~amount=bnFromInt(1),
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user7,
+        ~admin,
+      ),
+    );
+
+  Js.log("Multiple mints same price update");
+  let mintAmount = bnFromString("20000000000000000");
+  let%AwaitThen _ =
+    mintAndApprove(
+      ~paymentToken,
+      ~amount=mintAmount->mul(CONSTANTS.twoBn),
+      ~user=user3,
+      ~approvedAddress=longShort.address,
+    );
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+
+  let%AwaitThen _ = priceAndStateUpdate();
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.redeemLongNextPrice(
+        ~marketIndex=1,
+        ~tokens_redeem=mintAmount,
+      );
+  let%AwaitThen _ = priceAndStateUpdate();
+
+  Js.log("Multiple mints same price update");
+  let mintAmount = bnFromString("20000000000000000");
+  let%AwaitThen _ =
+    mintAndApprove(
+      ~paymentToken,
+      ~amount=mintAmount->mul(CONSTANTS.twoBn),
+      ~user=user3,
+      ~approvedAddress=longShort.address,
+    );
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+
+  let%AwaitThen _ = priceAndStateUpdate();
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user3)
+    ->LongShort.redeemLongNextPrice(
+        ~marketIndex=1,
+        ~tokens_redeem=mintAmount,
+      );
   let%AwaitThen _ = priceAndStateUpdate();
 
   Js.log("Update treasury base price");
@@ -188,5 +310,5 @@ let runTestTransactions =
         ~newBasePrice=bnFromString("300000000000000000"),
       );
 
-  JsPromise.resolve();
+  Promise.resolve();
 };

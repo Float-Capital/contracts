@@ -9,6 +9,8 @@ var ethMarketCapOraclePriceFeedAddress = ethers.utils.getAddress("0x67935f65D157
 
 var btcMarketCapOraclePriceFeedAddress = ethers.utils.getAddress("0x18E4058491C3F58bC2f747A9E64cA256Ed6B318d");
 
+var ethUSDPriceFeedAddress = ethers.utils.getAddress("0xF9680D99D6C9589e2a93a78A04A279e509205945");
+
 function launchPolygonMarkets(param, deploymentArgs) {
   var treasury = param.treasury;
   var paymentToken = param.paymentToken;
@@ -23,7 +25,23 @@ function launchPolygonMarkets(param, deploymentArgs) {
               }));
 }
 
+function launch3thMarket(param, deploymentArgs) {
+  var treasury = param.treasury;
+  var paymentToken = param.paymentToken;
+  var longShort = param.longShort;
+  var staker = param.staker;
+  return LetOps.AwaitThen.let_(Curry._1(deploymentArgs.getNamedAccounts, undefined), (function (namedAccounts) {
+                return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
+                              var admin = loadedAccounts[1];
+                              console.log("deploying markets");
+                              return DeployHelpers.deploy3TH_Polygon(longShort, staker, treasury, admin, paymentToken, ethUSDPriceFeedAddress, deploymentArgs.deployments, namedAccounts);
+                            }));
+              }));
+}
+
 exports.ethMarketCapOraclePriceFeedAddress = ethMarketCapOraclePriceFeedAddress;
 exports.btcMarketCapOraclePriceFeedAddress = btcMarketCapOraclePriceFeedAddress;
+exports.ethUSDPriceFeedAddress = ethUSDPriceFeedAddress;
 exports.launchPolygonMarkets = launchPolygonMarkets;
+exports.launch3thMarket = launch3thMarket;
 /* ethMarketCapOraclePriceFeedAddress Not a pure module */

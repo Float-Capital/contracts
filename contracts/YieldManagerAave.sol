@@ -71,18 +71,7 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
     ║       CONTRACT SET-UP       ║
     ╚═════════════════════════════╝*/
 
-  /**
-    @notice Constructor for initializing the aave yield manager with a given payment token and corresponding Aave contracts
-    @param _longShort address of the longShort contract
-    @param _treasury address of the treasury contract
-    @param _paymentToken address of the payment token
-    @param _aToken address of the interest accruing token linked to the payment token
-    @param _lendingPoolAddressesProvider address of the aave lending pool address provider contract
-    @param _aaveReferralCode unique code for aave referrals
-    @param _admin admin for the contract
-    @dev referral code will be set to 0, depricated Aave feature
-  */
-  function initialize(
+  function internalInitialize(
     address _longShort,
     address _treasury,
     address _paymentToken,
@@ -91,7 +80,7 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
     address _aaveIncentivesController,
     uint16 _aaveReferralCode,
     address _admin
-  ) external initializer {
+  ) internal initializer {
     require(
       _longShort != address(0) &&
         _treasury != address(0) &&
@@ -113,6 +102,39 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
     aToken = IERC20Upgradeable(_aToken);
     lendingPoolAddressesProvider = ILendingPoolAddressesProvider(_lendingPoolAddressesProvider);
     aaveIncentivesController = IAaveIncentivesController(_aaveIncentivesController);
+  }
+
+  /**
+    @notice Constructor for initializing the aave yield manager with a given payment token and corresponding Aave contracts
+    @param _longShort address of the longShort contract
+    @param _treasury address of the treasury contract
+    @param _paymentToken address of the payment token
+    @param _aToken address of the interest accruing token linked to the payment token
+    @param _lendingPoolAddressesProvider address of the aave lending pool address provider contract
+    @param _aaveReferralCode unique code for aave referrals
+    @param _admin admin for the contract
+    @dev referral code will be set to 0, depricated Aave feature
+  */
+  function initialize(
+    address _longShort,
+    address _treasury,
+    address _paymentToken,
+    address _aToken,
+    address _lendingPoolAddressesProvider,
+    address _aaveIncentivesController,
+    uint16 _aaveReferralCode,
+    address _admin
+  ) external initializer {
+    internalInitialize(
+      _longShort,
+      _treasury,
+      _paymentToken,
+      _aToken,
+      _lendingPoolAddressesProvider,
+      _aaveIncentivesController,
+      _aaveReferralCode,
+      _admin
+    );
 
     // Approve tokens for aave lending pool maximally.
     IERC20(_paymentToken).approve(

@@ -25,7 +25,7 @@ let test =
   describe("calculateNewCumulativeValue", () => {
     let promiseRef:
       ref(
-        JsPromise.t(
+        Promise.t(
           Staker.Exposed._calculateNewCumulativeIssuancePerStakedSynthExposedReturn,
         ),
       ) =

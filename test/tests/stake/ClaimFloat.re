@@ -51,7 +51,7 @@ let test =
       });
 
     let userWalletRef: ref(Ethers.Wallet.t) = ref(None->Obj.magic);
-    let promiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
+    let promiseRef: ref(Promise.t(ContractHelpers.transaction)) =
       ref(None->Obj.magic);
 
     let setup =
@@ -70,7 +70,7 @@ let test =
 
       let%Await _ =
         marketIndices->Array.reduceWithIndex(
-          ()->JsPromise.resolve,
+          ()->Promise.resolve,
           (lastPromise, marketIndex, arrayIndex) => {
             let%AwaitThen _ = lastPromise;
             contracts^.staker

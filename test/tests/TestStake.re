@@ -54,7 +54,7 @@ describe("Float System", () => {
                 expectedStakeAmount,
               );
             })
-          ->JsPromise.all;
+          ->Promise.all;
         ();
       },
     );
@@ -88,18 +88,18 @@ describe("Float System", () => {
       let%Await _ =
         marketsUserHasStakedIn
         ->Array.map(market => {
-            JsPromise.all2((
+            Promise.all2((
               staker->Staker.userIndexOfLastClaimedReward(
                 market,
                 testUser.address,
               ),
               staker->Staker.latestRewardIndex(market),
             ))
-            ->JsPromise.map(((userLastClaimed, latestRewardIndex)) => {
+            ->Promise.thenResolve(((userLastClaimed, latestRewardIndex)) => {
                 Chai.bnEqual(userLastClaimed, latestRewardIndex)
               })
           })
-        ->JsPromise.all;
+        ->Promise.all;
       ();
     });
   });

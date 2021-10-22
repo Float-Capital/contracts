@@ -13,8 +13,8 @@ let testUnit =
     describe("changeFloatPercentage", () => {
       let newFloatPerc = bnFromString("42000000000000000");
 
-      let txPromiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
-        ref(()->JsPromise.resolve->Obj.magic);
+      let txPromiseRef: ref(Promise.t(ContractHelpers.transaction)) =
+        ref(()->Promise.resolve->Obj.magic);
 
       before_once'(() => {
         let%Await _ =
@@ -103,8 +103,8 @@ let testUnit =
     describe("changeUnstakeFee", () => {
       let unstakeFeeBasisPoints = Helpers.randomInteger();
 
-      let txPromiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
-        ref(()->JsPromise.resolve->Obj.magic);
+      let txPromiseRef: ref(Promise.t(ContractHelpers.transaction)) =
+        ref(()->Promise.resolve->Obj.magic);
 
       before_once'(() => {
         let%Await _ =
@@ -182,8 +182,8 @@ let testUnit =
       let updatedExponent = bnFromInt(2);
       let safeExponentBitShifting = bnFromInt(50);
 
-      let txPromiseRef: ref(JsPromise.t(ContractHelpers.transaction)) =
-        ref(()->JsPromise.resolve->Obj.magic);
+      let txPromiseRef: ref(Promise.t(ContractHelpers.transaction)) =
+        ref(()->Promise.resolve->Obj.magic);
 
       before_once'(() => {
         let%Await _ =

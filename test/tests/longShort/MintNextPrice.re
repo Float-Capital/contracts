@@ -35,7 +35,7 @@ let testIntegration =
       let%AwaitThen _ =
         paymentToken->ERC20Mock.mint(
           ~_to=testUser.address,
-          ~amount=amountToNextPriceMint,
+          ~amount=amountToNextPriceMint->add(CONSTANTS.oneBn),
         );
 
       let%AwaitThen _ =
@@ -43,7 +43,7 @@ let testIntegration =
         ->ContractHelpers.connect(~address=testUser)
         ->ERC20Mock.approve(
             ~spender=longShort.address,
-            ~amount=amountToNextPriceMint,
+            ~amount=amountToNextPriceMint->add(CONSTANTS.oneBn),
           );
 
       let%AwaitThen _ =
@@ -85,7 +85,7 @@ let testIntegration =
       let%AwaitThen _ =
         longShort
         ->ContractHelpers.connect(~address=testUser)
-        ->LongShort.mintLongNextPrice(~marketIndex, ~amount=bnFromInt(0));
+        ->LongShort.mintLongNextPrice(~marketIndex, ~amount=bnFromInt(1));
       let%AwaitThen usersUpdatedBalance =
         longSynth->SyntheticToken.balanceOf(~account=testUser.address);
 

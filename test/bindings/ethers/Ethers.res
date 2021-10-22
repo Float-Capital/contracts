@@ -31,7 +31,7 @@ type txResult = {
 type txHash = string
 type txSubmitted = {
   hash: txHash,
-  wait: (. unit) => JsPromise.t<txResult>,
+  wait: (. unit) => Promise.t<txResult>,
 }
 type txError = {
   @dead("txError.code") code: int, // -32000 = always failing tx ;  4001 = Rejected by signer.
@@ -76,7 +76,7 @@ module BigNumber = {
 type providerType
 
 @send
-external waitForTransaction: (providerType, string) => JsPromise.t<txResult> = "waitForTransaction"
+external waitForTransaction: (providerType, string) => Promise.t<txResult> = "waitForTransaction"
 
 type walletType = {address: ethAddress, provider: providerType}
 
@@ -91,20 +91,20 @@ module Wallet = {
 
   type rawSignature
   @send
-  external signMessage: (t, string) => JsPromise.t<rawSignature> = "signMessage"
+  external signMessage: (t, string) => Promise.t<rawSignature> = "signMessage"
 
-  @send external getBalance: t => JsPromise.t<BigNumber.t> = "getBalance"
+  @send external getBalance: t => Promise.t<BigNumber.t> = "getBalance"
 
   type sendParams = {
     to_: ethAddress,
     value: BigNumber.t,
   }
   @send
-  external sendTransaction: (t, sendParams) => JsPromise.t<txResult> = "sendTransaction"
+  external sendTransaction: (t, sendParams) => Promise.t<txResult> = "sendTransaction"
 }
 
 @val @scope("ethers")
-external getSigners: unit => JsPromise.t<array<Wallet.t>> = "getSigners"
+external getSigners: unit => Promise.t<array<Wallet.t>> = "getSigners"
 
 module Providers = {
   type t = providerType
@@ -112,7 +112,7 @@ module Providers = {
   @new @scope("ethers") @scope("providers")
   external makeProvider: string => t = "JsonRpcProvider"
 
-  @send external getBalance: (t, ethAddress) => JsPromise.t<option<BigNumber.t>> = "getBalance"
+  @send external getBalance: (t, ethAddress) => Promise.t<option<BigNumber.t>> = "getBalance"
   @send
   external getSigner: (t, ethAddress) => option<Wallet.t> = "getSigner"
 }
@@ -131,7 +131,7 @@ module Contract = {
 
   type tx = {
     hash: txHash,
-    wait: (. unit) => JsPromise.t<txResult>,
+    wait: (. unit) => Promise.t<txResult>,
   }
 
   @new @scope("ethers")
