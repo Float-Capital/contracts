@@ -32,9 +32,9 @@ let testUnit =
     });
 
     it(
-      "calls _mintAccumulatedFloatAndExecuteOutstandingShiftsMulti with the correct arguments",
+      "calls _mintAccumulatedFloatAndExecuteOutstandingActionsMulti with the correct arguments",
       () => {
-      StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsMultiCallCheck({
+      StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsMultiCallCheck({
         marketIndexes: marketIndices,
         user: getUser(),
       })

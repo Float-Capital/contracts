@@ -24,7 +24,23 @@ let topupBalanceIfLow = (~from: Wallet.t, ~to_: Wallet.t) => {
   };
 };
 
+let setOracleManagerPrice = (~longShort, ~marketIndex, ~admin) => {
+  let%AwaitThen oracleManagerAddr =
+    longShort->LongShort.oracleManagers(marketIndex);
+  let%AwaitThen oracleManager = OracleManagerMock.at(oracleManagerAddr);
+
+  let%AwaitThen currentPrice = oracleManager->OracleManagerMock.getLatestPrice;
+  let nextPrice = currentPrice->mul(bnFromInt(101))->div(bnFromInt(100));
+
+  oracleManager
+  ->ContractHelpers.connect(~address=admin)
+  ->OracleManagerMock.setPrice(~newPrice=nextPrice);
+};
+
 let updateSystemState = (~longShort, ~admin, ~marketIndex) => {
+  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
+
+  let%AwaitThen _ = Helpers.increaseTime(5);
   longShort
   ->ContractHelpers.connect(~address=admin)
   ->LongShort.updateSystemState(~marketIndex);
@@ -53,6 +69,39 @@ let stakeSynthLong = (~amount, ~longShort, ~marketIndex, ~user) => {
   };
 };
 
+let withdrawStakeSynthLong = (~longShort, ~staker, ~marketIndex, ~user) => {
+  let%AwaitThen longAddress =
+    longShort->LongShort.syntheticTokens(marketIndex, true);
+
+  let%Await longStakeBalance =
+    staker->Staker.userAmountStaked(longAddress, user.address);
+  if (longStakeBalance->bnGt(bnFromString("0"))) {
+    let _ =
+      staker
+      ->ContractHelpers.connect(~address=user)
+      ->Staker.withdraw(
+          ~marketIndex,
+          ~isWithdrawFromLong=true,
+          ~amount=longStakeBalance,
+        );
+    ();
+  };
+};
+let stakeSynthShort = (~amount, ~longShort, ~marketIndex, ~user) => {
+  let%AwaitThen shortAddress =
+    longShort->LongShort.syntheticTokens(marketIndex, false);
+  let%AwaitThen synth = SyntheticToken.at(shortAddress);
+  let%Await usersSyntheticTokenBalance =
+    synth->SyntheticToken.balanceOf(~account=user.address);
+  if (usersSyntheticTokenBalance->bnGt(bnFromString("0"))) {
+    let _ =
+      synth
+      ->ContractHelpers.connect(~address=user)
+      ->SyntheticToken.stake(~amount);
+    ();
+  };
+};
+
 let executeOnMarkets =
     (marketIndexes: array(int), functionToExecute: int => Js.Promise.t('a)) => {
   marketIndexes->Array.reduce(
@@ -64,26 +113,12 @@ let executeOnMarkets =
   );
 };
 
-let setOracleManagerPrice = (~longShort, ~marketIndex, ~admin) => {
-  let%AwaitThen oracleManagerAddr =
-    longShort->LongShort.oracleManagers(marketIndex);
-  let%AwaitThen oracleManager = OracleManagerMock.at(oracleManagerAddr);
-
-  let%AwaitThen currentPrice = oracleManager->OracleManagerMock.getLatestPrice;
-  let nextPrice = currentPrice->mul(bnFromInt(101))->div(bnFromInt(100));
-
-  oracleManager
-  ->ContractHelpers.connect(~address=admin)
-  ->OracleManagerMock.setPrice(~newPrice=nextPrice);
-};
-
 let redeemShortNextPriceWithSystemUpdate =
     (~amount, ~marketIndex, ~longShort, ~user, ~admin) => {
   let%AwaitThen _ =
     longShort
     ->ContractHelpers.connect(~address=user)
     ->LongShort.redeemShortNextPrice(~marketIndex, ~tokens_redeem=amount);
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
   updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 
@@ -114,10 +149,7 @@ let shiftStakeNextPriceWithSystemUpdate =
         ~marketIndex,
         ~amountSyntheticTokensToShift=amount,
       );
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
-  longShort
-  ->ContractHelpers.connect(~address=admin)
-  ->LongShort.updateSystemState(~marketIndex);
+  updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 let shiftFromShortNextPriceWithSystemUpdate =
     (~amount, ~marketIndex, ~longShort, ~user, ~admin) => {
@@ -128,10 +160,8 @@ let shiftFromShortNextPriceWithSystemUpdate =
         ~marketIndex,
         ~amountSyntheticTokensToShift=amount,
       );
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
-  longShort
-  ->ContractHelpers.connect(~address=admin)
-  ->LongShort.updateSystemState(~marketIndex);
+
+  updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 let shiftFromLongNextPriceWithSystemUpdate =
     (~amount, ~marketIndex, ~longShort, ~user, ~admin) => {
@@ -142,8 +172,8 @@ let shiftFromLongNextPriceWithSystemUpdate =
         ~marketIndex,
         ~amountSyntheticTokensToShift=amount,
       );
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
-  longShort->LongShort.updateSystemState(~marketIndex);
+
+  updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 
 let mintLongNextPriceWithSystemUpdate =
@@ -166,7 +196,7 @@ let mintLongNextPriceWithSystemUpdate =
     longShort
     ->ContractHelpers.connect(~address=user)
     ->LongShort.mintLongNextPrice(~marketIndex, ~amount);
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
+
   updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 
@@ -192,6 +222,52 @@ let mintNextPrice =
   ->mintFunction(~marketIndex, ~amount);
 };
 
+let claimFloatForUser = (~marketIndexes, ~staker, ~user) => {
+  let%Await _ =
+    staker
+    ->ContractHelpers.connect(~address=user)
+    ->Staker.claimFloatCustom(~marketIndexes);
+  ();
+};
+
+let updateFloatPercentage = (~staker, ~admin, ~newFloatPercentage) => {
+  let%Await _ =
+    staker
+    ->ContractHelpers.connect(~address=admin)
+    ->Staker.changeFloatPercentage(~newFloatPercentage);
+  ();
+};
+
+let updateBalanceIncentiveParameters =
+    (
+      ~staker,
+      ~admin,
+      ~marketIndex,
+      ~balanceIncentiveCurve_exponent,
+      ~balanceIncentiveCurve_equilibriumOffset,
+      ~safeExponentBitShifting,
+    ) => {
+  let%Await _ =
+    staker
+    ->ContractHelpers.connect(~address=admin)
+    ->Staker.changeBalanceIncentiveParameters(
+        ~marketIndex,
+        ~balanceIncentiveCurve_exponent,
+        ~balanceIncentiveCurve_equilibriumOffset,
+        ~safeExponentBitShifting,
+      );
+  ();
+};
+
+let updateStakeWithdrawalFee =
+    (~staker, ~admin, ~marketIndex, ~newMarketUnstakeFee_e18) => {
+  let%Await _ =
+    staker
+    ->ContractHelpers.connect(~address=admin)
+    ->Staker.changeUnstakeFee(~marketIndex, ~newMarketUnstakeFee_e18);
+  ();
+};
+
 let mintShortNextPriceWithSystemUpdate =
     (
       ~amount,
@@ -213,8 +289,6 @@ let mintShortNextPriceWithSystemUpdate =
     ->ContractHelpers.connect(~address=user)
     ->LongShort.mintShortNextPrice(~marketIndex, ~amount);
 
-  let%AwaitThen _ = setOracleManagerPrice(~longShort, ~marketIndex, ~admin);
-
   updateSystemState(~longShort, ~admin, ~marketIndex);
 };
 
@@ -227,7 +301,11 @@ let deployTestMarket =
       ~admin,
       ~paymentToken: ERC20Mock.t,
     ) => {
-  let%AwaitThen oracleManager = OracleManagerMock.make(~admin=admin.address);
+  let%AwaitThen oracleManager =
+    OracleManagerMock.make(
+      ~admin=admin.address,
+      ~maxUpdateIntervalSeconds=bnFromInt(2),
+    );
 
   let%AwaitThen yieldManager =
     YieldManagerMock.make(
@@ -254,6 +332,8 @@ let deployTestMarket =
         ~oracleManager=oracleManager.address,
         ~yieldManager=yieldManager.address,
       );
+
+  let%AwaitThen _ = Helpers.increaseTime(2);
 
   let%AwaitThen latestMarket = longShortInstance->LongShort.latestMarket;
   let kInitialMultiplier = bnFromString("1000000000000000000"); // 5x
@@ -766,6 +846,343 @@ let deploy3TH_Polygon =
   let aDaiPolygon = "0x27F8D03b3a2196956ED754baDc28D73be8830A6e";
   // https://polygonscan.com/address/0x357D51124f59836DeD84c8a1730D72B749d8BC23#code
   let aaveIncentivesControllerPolygon = "0x357D51124f59836DeD84c8a1730D72B749d8BC23";
+  Js.log("a.3");
+  let%AwaitThen yieldManager =
+    deployments->Hardhat.deploy(
+      ~name="YieldManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "contract": "YieldManagerAave_Implementation",
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              longShortInstance.address,
+              treasuryInstance.address,
+              paymentToken.address,
+              aDaiPolygon,
+              aavePoolAddressProviderPolygon,
+              aaveIncentivesControllerPolygon,
+              0,
+              admin.address,
+            ),
+          },
+        },
+      },
+    );
+  Js.log("a.4");
+  Js.log((
+    yieldManager.address,
+    syntheticTokenLong.address,
+    syntheticTokenShort.address,
+  ));
+  let%AwaitThen _ =
+    longShortInstance
+    ->ContractHelpers.connect(~address=admin)
+    ->LongShort.createNewSyntheticMarketExternalSyntheticTokens(
+        ~syntheticName,
+        ~syntheticSymbol,
+        ~longToken=syntheticTokenLong.address,
+        ~shortToken=syntheticTokenShort.address,
+        ~paymentToken=paymentToken.address,
+        ~oracleManager=oracleManager.address,
+        ~yieldManager=yieldManager.address,
+      );
+  Js.log("a.5");
+  let kInitialMultiplier = bnFromString("2000000000000000000"); // 2x
+  let kPeriod = bnFromInt(5184000); // 60 days
+  Js.log("a.6");
+  let unstakeFee_e18 = bnFromString("5000000000000000"); // 50 basis point unstake fee
+  let initialMarketSeedForEachMarketSide =
+    bnFromString("1000000000000000000");
+  let%AwaitThen _ =
+    paymentToken
+    ->ContractHelpers.connect(~address=admin)
+    ->ERC20Mock.approve(
+        ~spender=longShortInstance.address,
+        ~amount=initialMarketSeedForEachMarketSide->mul(bnFromInt(3)),
+      );
+  Js.log("a.7");
+  longShortInstance
+  ->ContractHelpers.connect(~address=admin)
+  ->LongShort.initializeMarket(
+      ~marketIndex=newMarketIndex,
+      ~kInitialMultiplier,
+      ~kPeriod,
+      ~unstakeFee_e18, // 50 basis point unstake fee
+      ~initialMarketSeedForEachMarketSide,
+      ~balanceIncentiveCurve_exponent=bnFromInt(5),
+      ~balanceIncentiveCurve_equilibriumOffset=bnFromInt(0),
+      ~marketTreasurySplitGradient_e18=CONSTANTS.tenToThe18,
+      ~marketLeverage=bnFromInt(3)->mul(CONSTANTS.tenToThe18),
+    );
+};
+
+let addGemsNfts = (~gemCollectorNFT, ~tokenUri, ~minGems) => {
+  let%AwaitThen loadedAccounts = Ethers.getSigners();
+
+  let admin = loadedAccounts->Array.getUnsafe(1);
+
+  Js.log("deploying gems nft");
+
+  gemCollectorNFT
+  ->ContractHelpers.connect(~address=admin)
+  ->GemCollectorNFT.addToken(~tokenUri, ~minGems);
+};
+
+let mintGemsNft = (~gemCollectorNFT, ~levelId, ~receiver) => {
+  Js.log("minting a gems nft");
+  let%AwaitThen loadedAccounts = Ethers.getSigners();
+
+  let user1 = loadedAccounts->Array.getUnsafe(2);
+
+  gemCollectorNFT
+  ->ContractHelpers.connect(~address=user1)
+  ->GemCollectorNFT.mintNFT(~levelId, ~receiver);
+};
+
+let deployMarketOnPolygon =
+    (
+      ~longShortInstance: LongShort.t,
+      ~stakerInstance: Staker.t,
+      ~treasuryInstance: Treasury_v0.t,
+      ~admin,
+      ~paymentToken: ERC20Mock.t,
+      ~ohmUSDPriceFeedAddress: Ethers.ethAddress,
+      ~deployments: Hardhat.deployments_t,
+      ~namedAccounts: Hardhat.namedAccounts,
+      ~syntheticName,
+      ~syntheticSymbol,
+      ~leverageAmount,
+    ) => {
+  let%AwaitThen latestMarket = longShortInstance->LongShort.latestMarket;
+  let newMarketIndex = latestMarket + 1;
+
+  if (newMarketIndex != 3) {
+    Js.Exn.raiseError("Wrong market Index");
+  };
+
+  let%AwaitThen syntheticTokenShort =
+    deployments->Hardhat.deploy(
+      ~name="SS" ++ syntheticSymbol,
+      ~arguments={
+        "contract": "SyntheticTokenUpgradeable",
+        "from": namedAccounts.deployer,
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Short " ++ syntheticName,
+              "fs" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              false,
+            ),
+          },
+        },
+      },
+    );
+  let%AwaitThen syntheticTokenLong =
+    deployments->Hardhat.deploy(
+      ~name="SL" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "SyntheticTokenUpgradeable",
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Long " ++ syntheticName,
+              "fl" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              true,
+            ),
+          },
+        },
+      },
+    );
+
+  let%AwaitThen oracleManager =
+    deployments->Hardhat.deploy(
+      ~name="OracleManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "OracleManagerChainlink",
+        "args": (namedAccounts.admin, ohmUSDPriceFeedAddress),
+      },
+    );
+  Js.log("a.1");
+  // https://polygonscan.com/address/0xd05e3E715d945B59290df0ae8eF85c1BdB684744#code
+  let aavePoolAddressProviderPolygon = "0xd05e3E715d945B59290df0ae8eF85c1BdB684744";
+  // https://polygonscan.com/address/0x27F8D03b3a2196956ED754baDc28D73be8830A6e#code
+  let aDaiPolygon = "0x27F8D03b3a2196956ED754baDc28D73be8830A6e";
+  // https://polygonscan.com/address/0x357D51124f59836DeD84c8a1730D72B749d8BC23#code
+  let aaveIncentivesControllerPolygon = "0x357D51124f59836DeD84c8a1730D72B749d8BC23";
+  Js.log("a.3");
+  let%AwaitThen yieldManager =
+    deployments->Hardhat.deploy(
+      ~name="YieldManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "contract": "YieldManagerAave_Implementation",
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              longShortInstance.address,
+              treasuryInstance.address,
+              paymentToken.address,
+              aDaiPolygon,
+              aavePoolAddressProviderPolygon,
+              aaveIncentivesControllerPolygon,
+              0,
+              admin.address,
+            ),
+          },
+        },
+      },
+    );
+  Js.log("a.4");
+  Js.log((
+    yieldManager.address,
+    syntheticTokenLong.address,
+    syntheticTokenShort.address,
+  ));
+  let%AwaitThen _ =
+    longShortInstance
+    ->ContractHelpers.connect(~address=admin)
+    ->LongShort.createNewSyntheticMarketExternalSyntheticTokens(
+        ~syntheticName,
+        ~syntheticSymbol,
+        ~longToken=syntheticTokenLong.address,
+        ~shortToken=syntheticTokenShort.address,
+        ~paymentToken=paymentToken.address,
+        ~oracleManager=oracleManager.address,
+        ~yieldManager=yieldManager.address,
+      );
+  Js.log("a.5");
+  let kInitialMultiplier = bnFromString("2000000000000000000"); // 2x
+  let kPeriod = bnFromInt(5184000); // 60 days
+  Js.log("a.6");
+  let unstakeFee_e18 = bnFromString("5000000000000000"); // 50 basis point unstake fee
+  let initialMarketSeedForEachMarketSide =
+    bnFromString("1000000000000000000");
+  let%AwaitThen _ =
+    paymentToken
+    ->ContractHelpers.connect(~address=admin)
+    ->ERC20Mock.approve(
+        ~spender=longShortInstance.address,
+        ~amount=initialMarketSeedForEachMarketSide->mul(bnFromInt(3)),
+      );
+  Js.log("a.7");
+  longShortInstance
+  ->ContractHelpers.connect(~address=admin)
+  ->LongShort.initializeMarket(
+      ~marketIndex=newMarketIndex,
+      ~kInitialMultiplier,
+      ~kPeriod,
+      ~unstakeFee_e18, // 50 basis point unstake fee
+      ~initialMarketSeedForEachMarketSide,
+      ~balanceIncentiveCurve_exponent=bnFromInt(5),
+      ~balanceIncentiveCurve_equilibriumOffset=bnFromInt(0),
+      ~marketTreasurySplitGradient_e18=CONSTANTS.tenToThe18,
+      ~marketLeverage=bnFromInt(leverageAmount)->mul(CONSTANTS.tenToThe18),
+    );
+};
+let deployAvax_Avalanche =
+    (
+      ~longShortInstance: LongShort.t,
+      ~stakerInstance: Staker.t,
+      ~treasuryInstance: Treasury_v0.t,
+      ~admin,
+      ~paymentToken: ERC20Mock.t,
+      ~avaxOraclePriceFeedAddress: Ethers.ethAddress,
+      ~deployments: Hardhat.deployments_t,
+      ~namedAccounts: Hardhat.namedAccounts,
+    ) => {
+  let syntheticName = "Avalanch3";
+  let syntheticSymbol = "Avax3";
+
+  let%AwaitThen latestMarket = longShortInstance->LongShort.latestMarket;
+  let newMarketIndex = latestMarket + 1;
+
+  let%AwaitThen syntheticTokenShort =
+    deployments->Hardhat.deploy(
+      ~name="SS" ++ syntheticSymbol,
+      ~arguments={
+        "contract": "SyntheticTokenUpgradeable",
+        "from": namedAccounts.deployer,
+        "log": true,
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Short " ++ syntheticName,
+              "fs" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              false,
+            ),
+          },
+        },
+      },
+    );
+  let%AwaitThen syntheticTokenLong =
+    deployments->Hardhat.deploy(
+      ~name="SL" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "SyntheticTokenUpgradeable",
+        "proxy": {
+          "proxyContract": "UUPSProxy",
+          "execute": {
+            "methodName": "initialize",
+            "args": (
+              "Float Long " ++ syntheticName,
+              "fl" ++ syntheticSymbol,
+              longShortInstance.address,
+              stakerInstance.address,
+              newMarketIndex,
+              true,
+            ),
+          },
+        },
+      },
+    );
+  Js.log2("Oracle manager!", avaxOraclePriceFeedAddress);
+
+  let%AwaitThen oracleManager =
+    deployments->Hardhat.deploy(
+      ~name="OracleManager" ++ syntheticSymbol,
+      ~arguments={
+        "from": namedAccounts.deployer,
+        "log": true,
+        "contract": "OracleManagerChainlink",
+        "args": (namedAccounts.admin, avaxOraclePriceFeedAddress),
+      },
+    );
+  Js.log("a.1");
+  // https://cchain.explorer.avax.network/address/0xb6A86025F0FE1862B372cb0ca18CE3EDe02A318f
+  let aavePoolAddressProviderPolygon = "0xb6A86025F0FE1862B372cb0ca18CE3EDe02A318f";
+  // https://cchain.explorer.avax.network/address/0x47AFa96Cdc9fAb46904A55a6ad4bf6660B53c38a
+  let aDaiPolygon = "0x47AFa96Cdc9fAb46904A55a6ad4bf6660B53c38a";
+  // https://cchain.explorer.avax.network/address/0x01D83Fe6A10D2f2B7AF17034343746188272cAc9
+  let aaveIncentivesControllerPolygon = "0x01D83Fe6A10D2f2B7AF17034343746188272cAc9";
   Js.log("a.3");
   let%AwaitThen yieldManager =
     deployments->Hardhat.deploy(

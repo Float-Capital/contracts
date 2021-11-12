@@ -24,3 +24,12 @@ contract ERC20Mock is ERC20PresetMinterPauser {
     }
   }
 }
+
+contract ERC20MockWithPublicMint is ERC20Mock {
+  constructor(string memory name, string memory symbol) ERC20Mock(name, symbol) {}
+
+  // Minting is public for easy testing on the mock.
+  function mint(uint256 amount) public {
+    super._mint(msg.sender, amount);
+  }
+}

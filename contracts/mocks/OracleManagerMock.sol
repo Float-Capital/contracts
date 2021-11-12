@@ -14,6 +14,10 @@ contract OracleManagerMock is IOracleManager {
   // Global state.
   int256 currentPrice; // e18
 
+  uint256 lastUpdate;
+  uint256 maxUpdateIntervalSeconds;
+  int256 forcedPriceAdjustment;
+
   ////////////////////////////////////
   /////////// MODIFIERS //////////////
   ////////////////////////////////////
@@ -27,7 +31,8 @@ contract OracleManagerMock is IOracleManager {
   ///// CONTRACT SET-UP //////////////
   ////////////////////////////////////
 
-  constructor(address _admin) {
+  constructor(address _admin, uint256 _maxUpdateIntervalSeconds) {
+    maxUpdateIntervalSeconds = _maxUpdateIntervalSeconds;
     admin = _admin;
 
     // Default to a price of 1.
@@ -43,7 +48,17 @@ contract OracleManagerMock is IOracleManager {
   }
 
   function updatePrice() external override returns (int256) {
-    return currentPrice;
+    int256 priceAdjustment = forcedPriceAdjustment;
+    if (
+      maxUpdateIntervalSeconds != 0 && /* a value of zero means it doesn't run */
+      lastUpdate + maxUpdateIntervalSeconds < block.timestamp
+    ) {
+      priceAdjustment = (priceAdjustment + 1) % 2;
+      forcedPriceAdjustment = priceAdjustment;
+      lastUpdate = block.timestamp;
+    }
+
+    return currentPrice + priceAdjustment;
   }
 
   function getLatestPrice() external view override returns (int256) {

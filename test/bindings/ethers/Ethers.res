@@ -115,6 +115,8 @@ module Providers = {
   @send external getBalance: (t, ethAddress) => Promise.t<option<BigNumber.t>> = "getBalance"
   @send
   external getSigner: (t, ethAddress) => option<Wallet.t> = "getSigner"
+  @send
+  external getBlockNumber: t => Promise.t<option<int>> = "getBlockNumber"
 }
 
 type providerOrSigner =

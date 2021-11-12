@@ -1,7 +1,7 @@
 const { network } = require("hardhat");
 const {
   STAKER,
-  COLLATERAL_TOKEN,
+  TEST_COLLATERAL_TOKEN,
   TREASURY,
   TREASURY_ALPHA,
   LONGSHORT,
@@ -14,6 +14,7 @@ const {
 } = require("../helper-hardhat-config");
 const mumbaiDaiAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
 const polygonDaiAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+const avalancheUsdcAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
 
 let networkToUse = network.name;
 
@@ -31,21 +32,29 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   let paymentTokenAddress;
 
-  if (networkToUse != "mumbai" && networkToUse != "polygon") {
-    console.log(networkToUse);
-    let paymentToken = await deploy(COLLATERAL_TOKEN, {
+  if (networkToUse === "polygon") {
+    paymentTokenAddress = polygonDaiAddress;
+  } else if (networkToUse === "avalanche") {
+    paymentTokenAddress = avalancheUsdcAddress;
+  } else if (networkToUse === "mumbai") {
+    paymentTokenAddress = mumbaiDaiAddress;
+  } else {
+    console.log(networkToUse, TEST_COLLATERAL_TOKEN);
+    let paymentToken = await deploy(TEST_COLLATERAL_TOKEN, {
       from: deployer,
       log: true,
       args: ["dai token", "DAI"],
     });
     console.log("dai address", paymentToken.address);
     paymentTokenAddress = paymentToken.address;
-  } else if (networkToUse === "polygon") {
-    paymentTokenAddress = polygonDaiAddress;
-  } else if (networkToUse === "mumbai") {
-    paymentTokenAddress = mumbaiDaiAddress;
-  } else {
-    throw new Error(`network ${networkToUse} un-accounted for`);
+    let paymentTokenContract = await ethers.getContractAt(
+      TEST_COLLATERAL_TOKEN,
+      paymentTokenAddress
+    );
+
+    accounts.map(account => {
+      paymentTokenContract["mint(address,uint256)"](account.address, "10000000000000000000000")
+    })
   }
 
   console.log("Deploying contracts with the account:", deployer);

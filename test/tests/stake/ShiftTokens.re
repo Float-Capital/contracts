@@ -33,8 +33,8 @@ let testUnit =
           ~userNextPrice_stakedActionIndex,
           ~latestRewardIndex,
           ~userAmountStaked,
+          ~user,
         ) => {
-      let user = accounts.contents->Array.getUnsafe(0).address;
       let {staker, syntheticTokenSmocked} = contracts.contents;
 
       let%Await _ =
@@ -73,11 +73,12 @@ let testUnit =
     });
 
     it(
-      "calls _mintAccumulatedFloatAndExecuteOutstandingShifts (via modifier) with the correct arguments if the user has a 'confirmed' shift that needs to be settled",
+      "calls _mintAccumulatedFloatAndExecuteOutstandingActions (via modifier) with the correct arguments if the user has a 'confirmed' shift that needs to be settled",
       () => {
         let userNextPrice_stakedActionIndex = Helpers.randomInteger();
         let latestRewardIndex =
           userNextPrice_stakedActionIndex->add(Helpers.randomInteger());
+        let user = accounts.contents->Array.getUnsafe(0).address;
 
         let%Await _ =
           setup(
@@ -90,18 +91,21 @@ let testUnit =
               amountSyntheticTokensToShift->add(
                 amountSyntheticTokensToShiftBeforeValue,
               ),
+            ~user,
           );
 
-        StakerSmocked.InternalMock._updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
-          marketIndex: marketIndex,
+        StakerSmocked.InternalMock._updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActionsCallCheck({
+          marketIndex,
+          user,
         });
       },
     );
 
     it(
-      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingShifts if userNextPrice_stakedActionIndex == 0",
+      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingActions if userNextPrice_stakedActionIndex == 0",
       () => {
         let latestRewardIndex = Helpers.randomInteger();
+        let user = accounts.contents->Array.getUnsafe(0).address;
 
         let%Await _ =
           setup(
@@ -114,19 +118,21 @@ let testUnit =
               amountSyntheticTokensToShift->add(
                 amountSyntheticTokensToShiftBeforeValue,
               ),
+            ~user,
           );
         ();
         expect(
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsFunction(),
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsFunction(),
         )
         ->toHaveCallCount(0);
       },
     );
     it(
-      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingShifts if userNextPrice_stakedActionIndex == latestRewardIndex",
+      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingActions if userNextPrice_stakedActionIndex == latestRewardIndex",
       () => {
         let userNextPrice_stakedActionIndex = Helpers.randomInteger();
         let latestRewardIndex = userNextPrice_stakedActionIndex;
+        let user = accounts.contents->Array.getUnsafe(0).address;
 
         let%Await _ =
           setup(
@@ -139,22 +145,23 @@ let testUnit =
               amountSyntheticTokensToShift->add(
                 amountSyntheticTokensToShiftBeforeValue,
               ),
+            ~user,
           );
-        ();
 
         expect(
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsFunction(),
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsFunction(),
         )
         ->toHaveCallCount(0);
       },
     );
 
     it(
-      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingShifts if userNextPrice_stakedActionIndex > latestRewardIndex",
+      "doesn't call _mintAccumulatedFloatAndExecuteOutstandingActions if userNextPrice_stakedActionIndex > latestRewardIndex",
       () => {
         let latestRewardIndex = Helpers.randomInteger();
         let userNextPrice_stakedActionIndex =
           latestRewardIndex->add(Helpers.randomInteger());
+        let user = accounts.contents->Array.getUnsafe(0).address;
 
         let%Await _ =
           setup(
@@ -167,10 +174,11 @@ let testUnit =
               amountSyntheticTokensToShift->add(
                 amountSyntheticTokensToShiftBeforeValue,
               ),
+            ~user,
           );
 
         expect(
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsFunction(),
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsFunction(),
         )
         ->toHaveCallCount(0);
       },
@@ -193,6 +201,7 @@ let testUnit =
             amountSyntheticTokensToShift->add(
               amountSyntheticTokensToShiftBeforeValue,
             ),
+          ~user,
         );
 
       let%Await userNextPrice_stakedActionIndexAfter =
@@ -213,6 +222,7 @@ let testUnit =
         () => {
           let {longShortSmocked} = contracts.contents;
           let latestRewardIndex = Helpers.randomInteger();
+          let user = accounts.contents->Array.getUnsafe(0).address;
 
           let%Await _ =
             setup(
@@ -225,6 +235,7 @@ let testUnit =
                 amountSyntheticTokensToShift->add(
                   amountSyntheticTokensToShiftBeforeValue,
                 ),
+              ~user,
             );
 
           longShortSmocked->LongShortSmocked.shiftPositionNextPriceCallCheck({
@@ -253,6 +264,7 @@ let testUnit =
                 amountSyntheticTokensToShift->add(
                   amountSyntheticTokensToShiftBeforeValue,
                 ),
+              ~user,
             );
 
           let%Await totalAmountToShiftFromSide =

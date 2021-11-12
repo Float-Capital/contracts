@@ -160,9 +160,6 @@ let testUnit =
           contracts.contents.longShort
           ->LongShort.mintShortNextPrice(~marketIndex, ~amount);
 
-        // let mintNextPriceCallCheck =
-        //   LongShortSmocked.InternalMock._mintNextPriceCallCheck();
-
         LongShortSmocked.InternalMock._mintNextPriceCallCheck({
           marketIndex,
           amount,

@@ -55,6 +55,14 @@ interface ILongShort {
     uint256 oracleUpdateIndex
   );
 
+  event NextPriceDepositAndStake(
+    uint32 marketIndex,
+    bool isLong,
+    uint256 amountToStake,
+    address user,
+    uint256 oracleUpdateIndex
+  );
+
   event OracleUpdated(uint32 marketIndex, address oldOracleAddress, address newOracleAddress);
 
   event NewMarketLaunchedAndSeeded(uint32 marketIndex, uint256 initialSeed, uint256 marketLeverage);
@@ -123,6 +131,12 @@ interface ILongShort {
   function mintLongNextPrice(uint32 marketIndex, uint256 amount) external;
 
   function mintShortNextPrice(uint32 marketIndex, uint256 amount) external;
+
+  function mintAndStakeNextPrice(
+    uint32 marketIndex,
+    uint256 amount,
+    bool isLong
+  ) external;
 
   function redeemLongNextPrice(uint32 marketIndex, uint256 amount) external;
 

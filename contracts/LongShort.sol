@@ -867,6 +867,30 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     emit NextPriceDeposit(marketIndex, isLong, amount, msg.sender, nextUpdateIndex);
   }
 
+  function mintAndStakeNextPrice(
+    uint32 marketIndex,
+    uint256 amount,
+    bool isLong
+  )
+    external
+    virtual
+    override
+    updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
+    gemCollecting
+  {
+    require(amount > 0, "Mint amount must be greater than 0");
+    _transferPaymentTokensFromUserToYieldManager(marketIndex, amount);
+
+    batched_amountPaymentToken_deposit[marketIndex][isLong] += amount;
+    userNextPrice_paymentToken_depositAmount[marketIndex][isLong][staker] += amount;
+    uint256 nextUpdateIndex = marketUpdateIndex[marketIndex] + 1;
+    userNextPrice_currentUpdateIndex[marketIndex][staker] = nextUpdateIndex;
+
+    IStaker(staker).mintAndStakeNextPrice(marketIndex, amount, isLong, msg.sender);
+
+    emit NextPriceDepositAndStake(marketIndex, isLong, amount, msg.sender, nextUpdateIndex);
+  }
+
   /// @notice Allows users to mint long synthetic assets for a market. To prevent front-running these mints are executed on the next price update from the oracle.
   /// @param marketIndex An uint32 which uniquely identifies a market.
   /// @param amount Amount of payment tokens in that token's lowest denominationfor which to mint synthetic assets at next price.

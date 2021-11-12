@@ -86,7 +86,7 @@ let test =
       );
 
       it("calls mintAccumulatedFloat with correct args", () => {
-        StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
+        StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
           marketIndex: marketIndexForToken,
           user: from,
         })
@@ -137,7 +137,7 @@ let test =
 
       it("doesn't call mintAccumulatedFloat", () => {
         expect(
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsFunction(),
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsFunction(),
         )
         ->toHaveCallCount(0)
       });
@@ -152,7 +152,7 @@ let test =
 
       it("doesn't call mintAccumulatedFloat", () => {
         expect(
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsFunction(),
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsFunction(),
         )
         ->toHaveCallCount(0)
       });

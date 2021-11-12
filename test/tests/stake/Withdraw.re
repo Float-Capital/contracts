@@ -68,9 +68,9 @@ let testUnit =
         });
 
         it(
-          "calls _mintAccumulatedFloatAndExecuteOutstandingShifts with correct args",
+          "calls _mintAccumulatedFloatAndExecuteOutstandingActions with correct args",
           () => {
-          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
+          StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
             user: userWallet.contents.address,
             marketIndex,
           })

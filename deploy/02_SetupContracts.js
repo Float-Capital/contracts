@@ -5,11 +5,14 @@ const {
 const {
   launchPolygonMarkets,
 } = require("../deployTests/PolygonTransactions");
+const {
+  launchAvaxMarket,
+} = require("../deployTests/AvalancheTransactions");
 const { ethers } = require("hardhat");
 
 const {
   STAKER,
-  COLLATERAL_TOKEN,
+  TEST_COLLATERAL_TOKEN,
   TREASURY,
   LONGSHORT,
   FLOAT_TOKEN,
@@ -20,6 +23,8 @@ const {
   TREASURY_ALPHA,
   GEMS,
 } = require("../helper-hardhat-config");
+
+const avalancheUsdcAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
 
 let networkToUse = network.name;
 
@@ -39,15 +44,21 @@ module.exports = async (hardhatDeployArguments) => {
   let paymentTokenAddress;
   if (networkToUse == "polygon") {
     paymentTokenAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+  } else if (networkToUse === "avalanche") {
+    paymentTokenAddress = avalancheUsdcAddress;
   } else if (networkToUse == "mumbai") {
     paymentTokenAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
   } else if (networkToUse == "hardhat" || networkToUse == "ganache") {
-    paymentTokenAddress = (await deployments.get(COLLATERAL_TOKEN)).address;
+    paymentTokenAddress = (await deployments.get(TEST_COLLATERAL_TOKEN)).address;
   }
   const paymentToken = await ethers.getContractAt(
-    COLLATERAL_TOKEN,
+    TEST_COLLATERAL_TOKEN,
     paymentTokenAddress
   );
+
+  // A hack to get the ERC20MockWithPublicMint token to work on ganache (with test transactions - codegen doesn't account for duplicate named functions)
+  //    related: https://github.com/Float-Capital/monorepo/issues/1767
+  paymentToken["mint"] = paymentToken["mint(address,uint256)"]
 
   const Gems = await deployments.get(GEMS);
   const gems = await ethers.getContractAt(GEMS, Gems.address);
@@ -82,25 +93,39 @@ module.exports = async (hardhatDeployArguments) => {
     FLOAT_CAPITAL,
     FloatCapital.address
   );
-  ///////////////////////////
-  //Initialize the contracts/
-  ///////////////////////////
+  console.log("5");
+  // /////////////////////////
+  // Initialize the contracts/
+  // /////////////////////////
   await longShort.initialize(
     admin,
     tokenFactory.address,
     staker.address,
     gems.address
   );
+  console.log("6");
   if (isAlphaLaunch) {
-    await floatToken.initialize(
-      "Alpha Float",
-      "alphaFLT",
-      staker.address,
-      treasury.address
-    );
+    console.log("7");
+    if (networkToUse == "avalanche") {
+      console.log("8");
+      await floatToken.initialize(
+        "AVA Test Float",
+        "avaTestFLT",
+        staker.address,
+        treasury.address
+      );
+    } else {
+      await floatToken.initialize(
+        "Alpha Float",
+        "alphaFLT",
+        staker.address,
+        treasury.address
+      );
+    }
   } else {
     await floatToken.initialize("Float", "FLT", staker.address);
   }
+  console.log("9");
   await staker.initialize(
     admin,
     longShort.address,
@@ -111,12 +136,24 @@ module.exports = async (hardhatDeployArguments) => {
     "333333333333333333", // 25% for flt (33.333/133.333 ~= 0.25)
     gems.address
   );
+  console.log("10");
 
   await gems.initialize(admin, longShort.address, staker.address);
 
+  console.log("11");
   if (networkToUse == "polygon") {
     console.log("polygon test transactions");
     await launchPolygonMarkets(
+      {
+        staker,
+        longShort: longShort.connect(admin),
+        paymentToken,
+        treasury,
+      },
+      hardhatDeployArguments
+    );
+  } else if (networkToUse == "avalanche") {
+    await launchAvaxMarket(
       {
         staker,
         longShort: longShort.connect(admin),

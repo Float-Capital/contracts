@@ -1,5 +1,5 @@
 const STAKER = "Staker";
-const COLLATERAL_TOKEN = "ERC20Mock";
+const TEST_COLLATERAL_TOKEN = "ERC20MockWithPublicMint";
 const TREASURY = "Treasury_v0";
 const TREASURY_ALPHA = "TreasuryAlpha";
 const LONGSHORT = "LongShort";
@@ -8,10 +8,11 @@ const FLOAT_TOKEN_ALPHA = "AlphaTestFLT";
 const TOKEN_FACTORY = "TokenFactory";
 const FLOAT_CAPITAL = "FloatCapital_v0";
 const GEMS = "GEMS";
+const GEMS_COLLECTOR_NFT = "GemCollectorNFT";
 const isAlphaLaunch = true;
 module.exports = {
   STAKER,
-  COLLATERAL_TOKEN,
+  TEST_COLLATERAL_TOKEN,
   TREASURY,
   TREASURY_ALPHA,
   LONGSHORT,
@@ -20,5 +21,6 @@ module.exports = {
   TOKEN_FACTORY,
   FLOAT_CAPITAL,
   GEMS,
+  GEMS_COLLECTOR_NFT,
   isAlphaLaunch,
 };

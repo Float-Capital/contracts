@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 
 const {
   STAKER,
-  COLLATERAL_TOKEN,
+  TEST_COLLATERAL_TOKEN,
   TREASURY,
   LONGSHORT,
   isAlphaLaunch,
@@ -33,10 +33,10 @@ module.exports = async (hardhatDeployArguments) => {
   } else if (networkToUse == "mumbai") {
     paymentTokenAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
   } else if (networkToUse == "hardhat" || networkToUse == "ganache") {
-    paymentTokenAddress = (await deployments.get(COLLATERAL_TOKEN)).address;
+    paymentTokenAddress = (await deployments.get(TEST_COLLATERAL_TOKEN)).address;
   }
   const paymentToken = await ethers.getContractAt(
-    COLLATERAL_TOKEN,
+    TEST_COLLATERAL_TOKEN,
     paymentTokenAddress
   );
 

@@ -29,6 +29,7 @@ describe("Float System", () => {
     UpdateSystemState.testIntegration(~contracts, ~accounts);
 
     MintNextPrice.testIntegration(~contracts, ~accounts);
+    MintAndStakeNextPrice.testIntegration(~contracts, ~accounts);
     ShiftNextPrice.testIntegration(~contracts, ~accounts);
     RedeemNextPrice.testIntegration(~contracts, ~accounts);
     InitializeMarket.testIntegration(~contracts, ~accounts);

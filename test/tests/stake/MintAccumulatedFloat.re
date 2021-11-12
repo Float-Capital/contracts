@@ -27,7 +27,7 @@ let test =
           ~functionName="mintAccumulatedFloat",
         );
 
-      StakerSmocked.InternalMock.mock_calculateAccumulatedFloatAndExecuteOutstandingShiftsToReturn(
+      StakerSmocked.InternalMock.mock_calculateAccumulatedFloatAndExecuteOutstandingActionsToReturn(
         floatToMintLong->add(floatToMintShort),
       );
 
@@ -39,7 +39,7 @@ let test =
 
       promiseRef :=
         contracts^.staker
-        ->Staker.Exposed._mintAccumulatedFloatAndExecuteOutstandingShiftsExposed(
+        ->Staker.Exposed._mintAccumulatedFloatAndExecuteOutstandingActionsExposed(
             ~marketIndex,
             ~user,
           );
@@ -52,7 +52,7 @@ let test =
       before_once'(() => setup(~floatToMintLong, ~floatToMintShort));
 
       it("calls calculateAccumulatedFloat with correct arguments", () =>
-        StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
+        StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
           marketIndex,
           user,
         })
@@ -104,7 +104,7 @@ let test =
       });
 
       it("calls calculateAccumulatedFloat with correct arguments", () =>
-        StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
+        StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
           marketIndex,
           user,
         })

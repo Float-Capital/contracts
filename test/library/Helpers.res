@@ -91,7 +91,7 @@ let createSyntheticMarket = (
   longShort: LongShort.t,
 ) => {
   Promise.all3((
-    OracleManagerMock.make(~admin),
+    OracleManagerMock.make(~admin, ~maxUpdateIntervalSeconds=bnFromInt(0)),
     YieldManagerMock.make(~longShort=longShort.address, ~token=paymentToken.address, ~treasury),
     paymentToken
     ->ERC20Mock.mint(~_to=admin, ~amount=initialMarketSeedForEachMarketSide->mul(bnFromInt(100)))

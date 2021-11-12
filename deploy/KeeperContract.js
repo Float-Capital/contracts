@@ -33,12 +33,12 @@ module.exports = async ({ deployments }) => {
     keeper.address
   );
 
-
-
-  await keeperContract.updateHeartbeatThresholdForMarket(1, 3600) // in times of extremely low volotility and no user interaction only update every hour
+  // 43200 = every 12 hours
+  // 3600 = every hour
+  await keeperContract.updateHeartbeatThresholdForMarket(1, 43200) // in times of extremely low volotility and no user interaction only update every hour
   await keeperContract.updatePercentChangeThresholdForMarket(
     1,
-    "2500000000000000" // 2.5*10^15 is a price change of 0.25%
+    "25000000000000000" // 2.5*10^15 is a price change of 0.25%
   )
   console.log("market 1 configured")
 

@@ -13,7 +13,7 @@ let makeIterator = anyArray => {
 };
 
 let smockedCalcAccumIterativeBinding = [%raw
-  {|(_r, arr) => _r._calculateAccumulatedFloatAndExecuteOutstandingShiftsMock.returns(makeIterator(arr))|}
+  {|(_r, arr) => _r._calculateAccumulatedFloatAndExecuteOutstandingActionsMock.returns(makeIterator(arr))|}
 ];
 
 // smocked allows functions to be passed as return vals,
@@ -32,7 +32,7 @@ let test =
       ~contracts: ref(Helpers.stakerUnitTestContracts),
       ~accounts: ref(array(Ethers.Wallet.t)),
     ) => {
-  describe("_mintAccumulatedFloatAndExecuteOutstandingShiftsMulti", () => {
+  describe("_mintAccumulatedFloatAndExecuteOutstandingActionsMulti", () => {
     let marketIndices = [|
       Helpers.randomJsInteger(),
       Helpers.randomJsInteger(),
@@ -61,7 +61,7 @@ let test =
       let%Await _ =
         staker->StakerSmocked.InternalMock.setupFunctionForUnitTesting(
           ~functionName=
-            "_mintAccumulatedFloatAndExecuteOutstandingShiftsMulti",
+            "_mintAccumulatedFloatAndExecuteOutstandingActionsMulti",
         );
 
       userWalletRef := accounts.contents->Array.getUnsafe(5);
@@ -84,7 +84,7 @@ let test =
       promiseRef :=
         contracts^.staker
         ->ContractHelpers.connect(~address=userWalletRef^)
-        ->Staker.Exposed._mintAccumulatedFloatAndExecuteOutstandingShiftsMultiExposed(
+        ->Staker.Exposed._mintAccumulatedFloatAndExecuteOutstandingActionsMultiExposed(
             ~marketIndexes=marketIndices,
             ~user=userWalletRef.contents.address,
           );
@@ -106,7 +106,7 @@ let test =
 
       describe("case market has float to mint", () => {
         it("calls calculateAccumulatedFloat with correct arguments", () =>
-          StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingShiftsCallCheck({
+          StakerSmocked.InternalMock._calculateAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
             marketIndex: marketIndices->Array.getUnsafe(0),
             user: userWalletRef^.address,
           })

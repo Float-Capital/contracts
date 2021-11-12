@@ -175,7 +175,7 @@ contract KeeperExperiment is AccessControlledAndUpgradeable {
   }
 
   function shouldUpdateOracleNotViewBreakdown(uint32 marketIndex)
-    external
+    public
     returns (
       bool,
       bool,
@@ -192,6 +192,31 @@ contract KeeperExperiment is AccessControlledAndUpgradeable {
       priceChangeIsOverThreshold,
       priceChangePercent_1e18,
       areTherePendingNextPriceActions(marketIndex)
+    );
+  }
+
+  function shouldUpdateOracleNotViewBreakdownWithUpdateIndex(uint32 marketIndex)
+    external
+    returns (
+      bool,
+      bool,
+      int256,
+      bool,
+      uint256
+    )
+  {
+    (
+      bool wasLastUpdateOlderThanThreshold,
+      bool priceChangeIsOverThreshold,
+      int256 priceChangePercent_1e18,
+      bool areTherePendingNextPriceActions
+    ) = shouldUpdateOracleNotViewBreakdown(marketIndex);
+    return (
+      wasLastUpdateOlderThanThreshold,
+      priceChangeIsOverThreshold,
+      priceChangePercent_1e18,
+      areTherePendingNextPriceActions,
+      ILongShort(longShortAddress).marketUpdateIndex(marketIndex)
     );
   }
 }

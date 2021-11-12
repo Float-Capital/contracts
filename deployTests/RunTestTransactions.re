@@ -65,6 +65,7 @@ let runTestTransactions =
   let shortMintAmount = longMintAmount->div(bnFromInt(2));
   let redeemShortAmount = shortMintAmount->div(bnFromInt(2));
   let longStakeAmount = bnFromString("100000000000000000");
+  let shortStakeAmount = bnFromString("500000000000000000"); //0.5
 
   let priceAndStateUpdate = () => {
     let%AwaitThen _ =
@@ -73,6 +74,7 @@ let runTestTransactions =
         setOracleManagerPrice(~longShort, ~marketIndex=_, ~admin),
       );
 
+    let%AwaitThen _ = Helpers.increaseTime(5);
     Js.log("Executing update system state");
 
     executeOnMarkets(
@@ -149,8 +151,6 @@ let runTestTransactions =
       ),
     );
 
-  let%AwaitThen _ = priceAndStateUpdate();
-
   Js.log("Staking long position");
   let%AwaitThen _ =
     executeOnMarkets(
@@ -162,6 +162,25 @@ let runTestTransactions =
         ~user=user1,
       ),
     );
+
+  Js.log("multiple synth shift from long, same price update");
+
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user1)
+    ->LongShort.shiftPositionFromLongNextPrice(
+        ~marketIndex=1,
+        ~amountSyntheticTokensToShift=twoBn,
+      );
+
+  let%AwaitThen _ =
+    longShort
+    ->ContractHelpers.connect(~address=user1)
+    ->LongShort.shiftPositionFromLongNextPrice(
+        ~marketIndex=1,
+        ~amountSyntheticTokensToShift=twoBn,
+      );
+
   let%AwaitThen _ = priceAndStateUpdate();
 
   let longShiftAmount = longStakeAmount->div(twoBn);
@@ -243,6 +262,55 @@ let runTestTransactions =
         ~admin,
       ),
     );
+  Js.log("Stake short and shift to long");
+  //Test Short Shifting
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintShortNextPriceWithSystemUpdate(
+        ~amount=shortMintAmount,
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user2,
+        ~admin,
+      ),
+    );
+
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      stakeSynthShort(
+        ~amount=shortStakeAmount,
+        ~longShort,
+        ~marketIndex=_,
+        ~user=user2,
+      ),
+    );
+  let%AwaitThen _ = priceAndStateUpdate();
+
+  let shortShiftAmount = shortStakeAmount->div(twoBn);
+  Js.log("multiple shifts short same price update");
+
+  Js.log2("Amount to shift is", shortShiftAmount->div(twoBn)->bnToString);
+  let%AwaitThen _ =
+    staker
+    ->ContractHelpers.connect(~address=user2)
+    ->Staker.shiftTokens(
+        ~isShiftFromLong=false,
+        ~marketIndex=1,
+        ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
+      );
+
+  Js.log2("Amount to shift is", shortShiftAmount->div(twoBn)->bnToString);
+  let%AwaitThen _ =
+    staker
+    ->ContractHelpers.connect(~address=user2)
+    ->Staker.shiftTokens(
+        ~isShiftFromLong=false,
+        ~marketIndex=1,
+        ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
+      );
 
   Js.log("Multiple mints same price update");
   let mintAmount = bnFromString("20000000000000000");
@@ -309,6 +377,60 @@ let runTestTransactions =
     ->TreasuryAlpha.updateBasePrice(
         ~newBasePrice=bnFromString("300000000000000000"),
       );
+
+  Js.log2("User1 minting float:", user1.address);
+  let%AwaitThen _ =
+    claimFloatForUser(~marketIndexes=initialMarkets, ~staker, ~user=user1);
+
+  Js.log("Withdraw long stake");
+
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      withdrawStakeSynthLong(
+        ~longShort,
+        ~staker,
+        ~marketIndex=_,
+        ~user=user1,
+      ),
+    );
+
+  Js.log("Update float percentage");
+
+  let%AwaitThen _ =
+    updateFloatPercentage(
+      ~staker,
+      ~admin,
+      ~newFloatPercentage=bnFromString("333333333333333333"),
+    );
+
+  Js.log("Change Balance incentive paramaters");
+
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      updateBalanceIncentiveParameters(
+        ~staker,
+        ~admin,
+        ~marketIndex=_,
+        ~balanceIncentiveCurve_exponent=bnFromInt(5),
+        ~balanceIncentiveCurve_equilibriumOffset=bnFromInt(0),
+        ~safeExponentBitShifting=bnFromInt(50),
+      ),
+    );
+
+  Js.log("Change stake withdrawal fees");
+
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      updateStakeWithdrawalFee(
+        ~staker,
+        ~admin,
+        ~marketIndex=_,
+        ~newMarketUnstakeFee_e18=bnFromString("4000000000000000"),
+      ),
+    ); //40 basis points
 
   Promise.resolve();
 };

@@ -3,6 +3,7 @@
 pragma solidity 0.8.3;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/presets/ERC20PresetMinterPauserUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./abstract/AccessControlledAndUpgradeable.sol";
 
@@ -14,6 +15,7 @@ import "./GEMS.sol";
 import "hardhat/console.sol";
 
 contract Staker is IStaker, AccessControlledAndUpgradeable {
+  using SafeERC20 for IERC20;
   /*╔═════════════════════════════╗
     ║          VARIABLES          ║
     ╚═════════════════════════════╝*/
@@ -109,21 +111,26 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     _;
   }
 
-  function _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(
-    uint32 marketIndex
+  function _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActions(
+    uint32 marketIndex,
+    address user
   ) internal virtual {
     if (
-      userNextPrice_stakedActionIndex[marketIndex][msg.sender] != 0 &&
-      userNextPrice_stakedActionIndex[marketIndex][msg.sender] <= latestRewardIndex[marketIndex]
+      userNextPrice_stakedActionIndex[marketIndex][user] != 0 &&
+      userNextPrice_stakedActionIndex[marketIndex][user] <= latestRewardIndex[marketIndex]
     ) {
-      _mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, msg.sender);
+      _mintAccumulatedFloatAndExecuteOutstandingActions(marketIndex, user);
     }
   }
 
-  modifier updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(
-    uint32 marketIndex
+  modifier updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActions(
+    uint32 marketIndex,
+    address user
   ) {
-    _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex);
+    _updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActions(
+      marketIndex,
+      user
+    );
     _;
   }
 
@@ -629,7 +636,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   @param user The address of the user.
   @return floatReward The amount of float owed.
    */
-  function _calculateAccumulatedFloatAndExecuteOutstandingShifts(uint32 marketIndex, address user)
+  function _calculateAccumulatedFloatAndExecuteOutstandingActions(uint32 marketIndex, address user)
     internal
     virtual
     returns (uint256 floatReward)
@@ -662,43 +669,72 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
 
       // Update the users balances
 
-      uint256 amountToShiftAwayFromCurrentSide = userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[
+      uint256 amountForAction_userShiftOrMint = userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[
           marketIndex
         ][true][user];
       // Handle shifts from LONG side:
-      if (amountToShiftAwayFromCurrentSide > 0) {
+      if (amountForAction_userShiftOrMint > 0) {
         amountStakedShort += ILongShort(longShort).getAmountSyntheticTokenToMintOnTargetSide(
           marketIndex,
-          amountToShiftAwayFromCurrentSide,
+          amountForAction_userShiftOrMint,
           true,
           usersShiftIndex
         );
 
-        amountStakedLong -= amountToShiftAwayFromCurrentSide;
+        amountStakedLong -= amountForAction_userShiftOrMint;
         userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[marketIndex][true][user] = 0;
       }
 
-      amountToShiftAwayFromCurrentSide = userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[
+      amountForAction_userShiftOrMint = userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[
         marketIndex
       ][false][user];
       // Handle shifts from SHORT side:
-      if (amountToShiftAwayFromCurrentSide > 0) {
+      if (amountForAction_userShiftOrMint > 0) {
         amountStakedLong += ILongShort(longShort).getAmountSyntheticTokenToMintOnTargetSide(
           marketIndex,
-          amountToShiftAwayFromCurrentSide,
+          amountForAction_userShiftOrMint,
           false,
           usersShiftIndex
         );
 
-        amountStakedShort -= amountToShiftAwayFromCurrentSide;
+        amountStakedShort -= amountForAction_userShiftOrMint;
         userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[marketIndex][false][user] = 0;
+      }
+
+      //Handle user next price mint and stake
+      amountForAction_userShiftOrMint = userNextPrice_paymentToken_depositAmount[marketIndex][true][
+        user
+      ];
+      // Handle mints from LONG side:
+      if (amountForAction_userShiftOrMint > 0) {
+        uint256 syntheticTokenValue = ILongShort(longShort).syntheticToken_priceSnapshot(
+          marketIndex,
+          true,
+          usersShiftIndex
+        );
+
+        amountStakedLong += (amountForAction_userShiftOrMint * 1e18) / syntheticTokenValue;
+        userNextPrice_paymentToken_depositAmount[marketIndex][true][user] = 0;
+      }
+
+      amountForAction_userShiftOrMint = userNextPrice_paymentToken_depositAmount[marketIndex][
+        false
+      ][user];
+      // Handle mints from short side:
+      if (amountForAction_userShiftOrMint > 0) {
+        uint256 syntheticTokenValue = ILongShort(longShort).syntheticToken_priceSnapshot(
+          marketIndex,
+          false,
+          usersShiftIndex
+        );
+
+        amountStakedShort += (amountForAction_userShiftOrMint * 1e18) / syntheticTokenValue;
+        userNextPrice_paymentToken_depositAmount[marketIndex][false][user] = 0;
       }
 
       // Save the users updated staked amounts
       userAmountStaked[longToken][user] = amountStakedLong;
       userAmountStaked[shortToken][user] = amountStakedShort;
-
-      emit StakeShifted(user, marketIndex, amountStakedLong, amountStakedShort);
 
       floatReward += _calculateAccumulatedFloatInRange(
         marketIndex,
@@ -736,11 +772,11 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   @param marketIndex An identifier for the market.
   @param user The address of the user.
    */
-  function _mintAccumulatedFloatAndExecuteOutstandingShifts(uint32 marketIndex, address user)
+  function _mintAccumulatedFloatAndExecuteOutstandingActions(uint32 marketIndex, address user)
     internal
     virtual
   {
-    uint256 floatToMint = _calculateAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, user);
+    uint256 floatToMint = _calculateAccumulatedFloatAndExecuteOutstandingActions(marketIndex, user);
 
     if (floatToMint > 0) {
       // Set the user has claimed up until now, stops them setting this forward
@@ -756,14 +792,14 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   @param marketIndexes Identifiers for the markets.
   @param user The address of the user.
    */
-  function _mintAccumulatedFloatAndExecuteOutstandingShiftsMulti(
+  function _mintAccumulatedFloatAndExecuteOutstandingActionsMulti(
     uint32[] calldata marketIndexes,
     address user
   ) internal virtual {
     uint256 floatTotal = 0;
     uint256 length = marketIndexes.length;
     for (uint256 i = 0; i < length; i++) {
-      uint256 floatToMint = _calculateAccumulatedFloatAndExecuteOutstandingShifts(
+      uint256 floatToMint = _calculateAccumulatedFloatAndExecuteOutstandingActions(
         marketIndexes[i],
         user
       );
@@ -788,7 +824,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
    */
   function claimFloatCustom(uint32[] calldata marketIndexes) external {
     ILongShort(longShort).updateSystemStateMulti(marketIndexes);
-    _mintAccumulatedFloatAndExecuteOutstandingShiftsMulti(marketIndexes, msg.sender);
+    _mintAccumulatedFloatAndExecuteOutstandingActionsMulti(marketIndexes, msg.sender);
   }
 
   /**
@@ -800,7 +836,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     // Unbounded loop - users are responsible for paying their own gas costs on these and it doesn't effect the rest of the system.
     // No need to impose limit.
     ILongShort(longShort).updateSystemStateMulti(marketIndexes);
-    _mintAccumulatedFloatAndExecuteOutstandingShiftsMulti(marketIndexes, user);
+    _mintAccumulatedFloatAndExecuteOutstandingActionsMulti(marketIndexes, user);
   }
 
   /*╔═══════════════════════╗
@@ -832,7 +868,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
       userCurrentIndexOfLastClaimedReward != 0 &&
       userCurrentIndexOfLastClaimedReward < currentRewardIndex
     ) {
-      _mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, from);
+      _mintAccumulatedFloatAndExecuteOutstandingActions(marketIndex, from);
     }
 
     userAmountStaked[msg.sender][from] += amount;
@@ -841,6 +877,30 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     userIndexOfLastClaimedReward[marketIndex][from] = currentRewardIndex;
 
     emit StakeAdded(from, msg.sender, amount, currentRewardIndex);
+  }
+
+  /*╔═══════════════════════════╗
+    ║       MINT & STAKE        ║
+    ╚═══════════════════════════╝*/
+
+  function mintAndStakeNextPrice(
+    uint32 marketIndex,
+    uint256 amount,
+    bool isLong,
+    address user
+  )
+    external
+    virtual
+    override
+    onlyLongShort
+    updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActions(
+      marketIndex,
+      user
+    )
+  {
+    userNextPrice_paymentToken_depositAmount[marketIndex][isLong][user] += amount;
+
+    userNextPrice_stakedActionIndex[marketIndex][user] = latestRewardIndex[marketIndex] + 1;
   }
 
   /**
@@ -858,7 +918,10 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     external
     virtual
     override
-    updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex)
+    updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActions(
+      marketIndex,
+      msg.sender
+    )
     gemCollecting(msg.sender)
   {
     require(amountSyntheticTokensToShift > 0, "No zero shifts.");
@@ -928,7 +991,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     address token
   ) internal {
     ILongShort(longShort).updateSystemState(marketIndex);
-    _mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, msg.sender);
+    _mintAccumulatedFloatAndExecuteOutstandingActions(marketIndex, msg.sender);
 
     uint256 currentAmountStaked = userAmountStaked[token][msg.sender];
     // If this value is greater than zero they have pending nextPriceShifts; don't allow user to shit these reserved tokens.
@@ -965,7 +1028,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
   */
   function withdrawAll(uint32 marketIndex, bool isWithdrawFromLong) external {
     ILongShort(longShort).updateSystemState(marketIndex);
-    _mintAccumulatedFloatAndExecuteOutstandingShifts(marketIndex, msg.sender);
+    _mintAccumulatedFloatAndExecuteOutstandingActions(marketIndex, msg.sender);
 
     address token = syntheticTokens[marketIndex][isWithdrawFromLong];
 

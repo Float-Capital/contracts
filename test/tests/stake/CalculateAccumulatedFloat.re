@@ -59,7 +59,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
           ~newUserAmountStakedShort,
         );
       let%Await floatDue =
-        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposedCall(
+        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposedCall(
           ~marketIndex,
           ~user,
         );
@@ -109,7 +109,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
             ~newUserAmountStakedShort,
           );
         let%Await floatDue =
-          staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposedCall(
+          staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposedCall(
             ~marketIndex,
             ~user,
           );
@@ -148,7 +148,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
           ~newUserAmountStakedShort=Ethers.BigNumber.fromInt(0),
         );
       let%Await floatDue =
-        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposedCall(
+        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposedCall(
           ~marketIndex,
           ~user,
         );
@@ -227,7 +227,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
               rewardAfterShiftInterval,
             |]);
 
-        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposedCall(
+        staker->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposedCall(
           ~marketIndex,
           ~user,
         );
@@ -300,7 +300,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
             // the setup function only simulates the call, it doesn't execute it, execute it here.
             let%Await _ =
               contracts.contents.staker
-              ->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposed(
+              ->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposed(
                   ~marketIndex,
                   ~user,
                 );
@@ -331,7 +331,7 @@ let test = (~contracts: ref(Helpers.coreContracts)) =>
         // the setup function only simulates the call, it doesn't execute it, execute it here.
         let%Await _ =
           contracts.contents.staker
-          ->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingShiftsExposed(
+          ->Staker.Exposed._calculateAccumulatedFloatAndExecuteOutstandingActionsExposed(
               ~marketIndex,
               ~user,
             );
