@@ -29,7 +29,7 @@ module.exports = async (hardhatDeployArguments) => {
       proxyContract: "UUPSProxy",
       execute: {
         methodName: "initializeNFT",
-        args: [admin, Gems.address, "Float Capital Gem Collector", "FCG"],
+        args: [admin, Gems.address, "Float Capital Gems", "FCG"],
       },
     },
     log: true,
@@ -55,15 +55,15 @@ module.exports = async (hardhatDeployArguments) => {
 
   const initialNfts = [
     {
-      tokenURI: "https://float.capital/nfts/ape",
+      tokenURI: "https://float.capital/nfts/gems/ape",
       minGems: "250000000000000000000",
     },
     {
-      tokenURI: "https://float.capital/nfts/chad",
+      tokenURI: "https://float.capital/nfts/gems/chad",
       minGems: "2500000000000000000000",
     },
     {
-      tokenURI: "https://float.capital/nfts/degen",
+      tokenURI: "https://float.capital/nfts/gems/degen",
       minGems: "10000000000000000000000",
     },
   ];

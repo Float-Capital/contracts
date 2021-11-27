@@ -4,11 +4,12 @@ pragma solidity 0.8.3;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/presets/ERC721PresetMinterPauserAutoIdUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "./GEMS.sol";
 
 /** @title GemCollectorNFT */
-contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
+contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable, UUPSUpgradeable {
   using CountersUpgradeable for CountersUpgradeable.Counter;
   CountersUpgradeable.Counter public tokenIds;
   CountersUpgradeable.Counter public levelIds;
@@ -29,6 +30,8 @@ contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
   // users has minted already the nft with that levelId
   mapping(address => mapping(uint256 => bool)) public hasMinted;
 
+  mapping(uint256 => uint256) private tokenIDtoLevelID;
+
   event TokenAdded(uint256 levelId, string tokenURI, uint256 minGems);
   event NFTMinted(address user, address receiver, uint256 levelId, uint256 tokenId);
 
@@ -39,6 +42,7 @@ contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
     string memory symbol
   ) external virtual initializer {
     __ERC721PresetMinterPauserAutoId_init(name, symbol, "");
+    __UUPSUpgradeable_init();
 
     renounceRole(DEFAULT_ADMIN_ROLE, msg.sender);
     renounceRole(MINTER_ROLE, msg.sender);
@@ -56,8 +60,8 @@ contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
     require(minGems > 1e18, "Gems min requirement too small");
     require(bytes(tokenUri).length > 0, "Empty tokenUri");
 
-    uint256 levelId = levelIds.current();
     levelIds.increment();
+    uint256 levelId = levelIds.current();
 
     levelIdToTokenData[levelId].tokenUri = tokenUri;
     levelIdToTokenData[levelId].minRequiredGemsToMintToken = minGems;
@@ -66,6 +70,7 @@ contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
   }
 
   function mintNFT(uint256 levelId, address receiver) external returns (uint256) {
+    require(levelId != 0, "level id doesn't exist");
     require(levelId <= levelIds.current(), "level id doesn't exist");
     require(!hasMinted[msg.sender][levelId], "Already minted this nft");
     require(
@@ -74,22 +79,23 @@ contract GemCollectorNFT is ERC721PresetMinterPauserAutoIdUpgradeable {
     );
     hasMinted[msg.sender][levelId] = true;
 
-    uint256 itemId = tokenIds.current();
     tokenIds.increment();
+
+    uint256 itemId = tokenIds.current();
     _mint(receiver, itemId);
-    _setTokenURI(itemId, levelIdToTokenData[levelId].tokenUri);
+
+    tokenIDtoLevelID[itemId] = levelId;
 
     emit NFTMinted(msg.sender, receiver, levelId, itemId);
     return itemId;
   }
 
-  function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
-    require(_exists(tokenId), "URI set of nonexistent token");
-    tokenURIs[tokenId] = _tokenURI;
-  }
-
   function tokenURI(uint256 tokenId) public view override returns (string memory) {
     require(_exists(tokenId), "URI query for nonexistent token");
-    return tokenURIs[tokenId];
+    return levelIdToTokenData[tokenIDtoLevelID[tokenId]].tokenUri;
   }
+
+  /// @notice Authorizes an upgrade to a new address.
+  /// @dev Can only be called by addresses wih UPGRADER_ROLE
+  function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 }

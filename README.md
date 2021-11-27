@@ -42,16 +42,19 @@ console.log("The balance is", blockNumber.toString());
 
 ## Verifying contracts
 
-To verify specific contracts use:
 [Hardhat verify](https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html)
-`npx hardhat verify --network <network name> CONTRACT_ADDRESS_HERE`
+`npx hardhat verify --network mumbai CONTRACT_ADDRESS_HERE`
 
+`npx hardhat verify --network <network name> CONTRACT_ADDRESS_HERE <constructor args strings seperate by spaces>`
 
-To verify all deployed contracts use (this only works with etherscan):
+> Where contract address is implementation address & upgradeable contracts take no constructor args
+> To verify all deployed contracts use (this only works with etherscan):
 
 `yarn hardhat --network <network name> etherscan-verify --api-key <your etherscan api key> --force-license --license UNLICENSED`
 
-For some more obscure networks (like avalanche c-chain) that don't have etherscan you can drag and drop the generated json deployment artifacts from hardhat-deploy into their web-portal. 
+For some more obscure networks (like avalanche c-chain) that don't have etherscan you can drag and drop the generated json deployment artifacts from hardhat-deploy into their web-portal.
+
+An alternative UI that can be used for contract verification: https://sourcify.dev/
 
 ## Troubleshooting
 

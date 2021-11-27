@@ -57,6 +57,17 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
   ///      In this case this variable would keep track of that so that the withdrawal can happen after the fact when liquidity becomes available.
   uint256 public amountReservedInCaseOfInsufficientAaveLiquidity;
 
+  uint256[45] private __variableGap;
+
+  /// @dev This stores the amount of disposable payment token that isn't yet in Aave that can be used for small withdrawals and deposits
+  uint256 public paymentTokenNotInAave;
+
+  /// @dev The maximum amount of payment token this contract will allow
+  uint256 public maxPaymentTokenNotInAaveThreshold;
+
+  /// @dev The desired minimum amount of payment token this contract will target
+  uint256 public minPaymentTokenNotInAaveTarget;
+
   /*╔═════════════════════════════╗
     ║          MODIFIERS          ║
     ╚═════════════════════════════╝*/
@@ -147,6 +158,20 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
     IERC20(paymentToken).approve(lendingPoolAddressesProvider.getLendingPool(), type(uint256).max);
   }
 
+  function setMinPaymentTokenNotInAaveTarget(uint256 _minPaymentTokenNotInAaveTarget)
+    external
+    onlyRole(ADMIN_ROLE)
+  {
+    minPaymentTokenNotInAaveTarget = _minPaymentTokenNotInAaveTarget;
+  }
+
+  function setMaxPaymentTokenNotInAaveThreshold(uint256 _maxPaymentTokenNotInAaveThreshold)
+    external
+    onlyRole(ADMIN_ROLE)
+  {
+    maxPaymentTokenNotInAaveThreshold = _maxPaymentTokenNotInAaveThreshold;
+  }
+
   /*╔════════════════════════╗
     ║     IMPLEMENTATION     ║
     ╚════════════════════════╝*/
@@ -169,12 +194,19 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
       }
     }
 
-    ILendingPool(lendingPoolAddressesProvider.getLendingPool()).deposit(
-      address(paymentToken),
-      amount,
-      address(this),
-      referralCode
-    );
+    uint256 newPaymentTokenNotInAave = paymentTokenNotInAave + amount;
+    // If the added amount doesn't go over the max payment token threshold deposit it all.
+    if (newPaymentTokenNotInAave < maxPaymentTokenNotInAaveThreshold) {
+      paymentTokenNotInAave = newPaymentTokenNotInAave;
+    } else {
+      paymentTokenNotInAave = minPaymentTokenNotInAaveTarget;
+      ILendingPool(lendingPoolAddressesProvider.getLendingPool()).deposit(
+        address(paymentToken),
+        newPaymentTokenNotInAave - minPaymentTokenNotInAaveTarget,
+        address(this),
+        referralCode
+      );
+    }
   }
 
   /// @notice Allows the LongShort pay out a user from tokens already withdrawn from Aave
@@ -207,16 +239,22 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
   /// @dev This will update the amountReservedInCaseOfInsufficientAaveLiquidity if not enough liquidity is avaiable on aave.
   ///      This means that our system can continue to operate even if there is insufficient liquidity in Aave for any reason.
   function removePaymentTokenFromMarket(uint256 amount) external override longShortOnly {
-    try
-      ILendingPool(lendingPoolAddressesProvider.getLendingPool()).withdraw(
-        address(paymentToken),
-        amount,
-        address(this)
-      )
-    {} catch {
-      // In theory we should only catch `VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH` errors.
-      // Safe to revert on all errors, if aave completely blocks withdrawals the amountReservedInCaseOfInsufficientAaveLiquidity can grow until it is fixed without problems.
-      amountReservedInCaseOfInsufficientAaveLiquidity += amount;
+    uint256 currentPaymentTokenNotInAave = paymentTokenNotInAave;
+    // If the added amount doesn't go over the max payment token threshold deposit it all.
+    if (currentPaymentTokenNotInAave < amount) {
+      try
+        ILendingPool(lendingPoolAddressesProvider.getLendingPool()).withdraw(
+          address(paymentToken),
+          amount,
+          address(this)
+        )
+      {} catch {
+        // In theory we should only catch `VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH` errors.
+        // Safe to revert on all errors, if aave completely blocks withdrawals the amountReservedInCaseOfInsufficientAaveLiquidity can grow until it is fixed without problems.
+        amountReservedInCaseOfInsufficientAaveLiquidity += amount;
+      }
+    } else {
+      paymentTokenNotInAave = currentPaymentTokenNotInAave - amount;
     }
   }
 
@@ -249,7 +287,7 @@ contract YieldManagerAave is IYieldManager, AccessControlledAndUpgradeable {
     uint256 totalValueRealizedForMarket,
     uint256 treasuryYieldPercent_e18
   ) external override longShortOnly returns (uint256) {
-    uint256 totalHeld = aToken.balanceOf(address(this));
+    uint256 totalHeld = aToken.balanceOf(address(this)) + paymentTokenNotInAave;
     uint256 _totalReservedForTreasury = totalReservedForTreasury;
 
     uint256 totalRealized = totalValueRealizedForMarket +

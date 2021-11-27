@@ -2,12 +2,8 @@ const { runTestTransactions } = require("../deployTests/RunTestTransactions");
 const {
   runMumbaiTransactions,
 } = require("../deployTests/RunMumbaiTransactions");
-const {
-  launchPolygonMarkets,
-} = require("../deployTests/PolygonTransactions");
-const {
-  launchAvaxMarket,
-} = require("../deployTests/AvalancheTransactions");
+const { launchPolygonMarkets } = require("../deployTests/PolygonTransactions");
+const { launchAvaxMarket } = require("../deployTests/AvalancheTransactions");
 const { ethers } = require("hardhat");
 
 const {
@@ -24,7 +20,7 @@ const {
   GEMS,
 } = require("../helper-hardhat-config");
 
-const avalancheUsdcAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
+const avalancheDaiAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
 
 let networkToUse = network.name;
 
@@ -45,7 +41,7 @@ module.exports = async (hardhatDeployArguments) => {
   if (networkToUse == "polygon") {
     paymentTokenAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
   } else if (networkToUse === "avalanche") {
-    paymentTokenAddress = avalancheUsdcAddress;
+    paymentTokenAddress = avalancheDaiAddress;
   } else if (networkToUse == "mumbai") {
     paymentTokenAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
   } else if (networkToUse == "hardhat" || networkToUse == "ganache") {

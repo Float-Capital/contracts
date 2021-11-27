@@ -69,6 +69,8 @@ interface ILongShort {
 
   event ExecuteNextPriceSettlementsUser(address user, uint32 marketIndex);
 
+  event MarketFundingRateMultiplerChanged(uint32 marketIndex, uint256 fundingRateMultiplier_e18);
+
   function syntheticTokens(uint32, bool) external view returns (address);
 
   function assetPrice(uint32) external view returns (int256);

@@ -16,6 +16,17 @@ let setAssetPrice = (longShort, ~marketIndex: int, ~assetPrice: Ethers.BigNumber
   )
 }
 
+let setStaker = (longShort, ~stakerAddress) => {
+  longShort->LongShort.setVariable(~name="staker", ~value=stakerAddress)
+}
+
+let setFundingRateMultiplier = (longShort, ~marketIndex, ~fundingRate) => {
+  longShort->LongShort.setVariable(
+    ~name="fundingRateMultiplier_e18",
+    ~value=createValueAtKey(marketIndex, fundingRate),
+  )
+}
+
 let setMarketUpdateIndex = (
   longShort,
   ~marketIndex: int,

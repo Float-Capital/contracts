@@ -161,6 +161,7 @@ describe("Float System", () => {
       MintNextPrice.testUnit(~contracts, ~accounts);
       BatchedSettlement.testUnit(~contracts, ~accounts);
       CreateNewSyntheticMarket.testUnit(~contracts, ~accounts);
+      CalculateFundingRate.testUnit(~contracts, ~accounts);
     });
   });
 });

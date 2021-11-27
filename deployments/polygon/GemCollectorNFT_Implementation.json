@@ -1,6 +1,25 @@
 {
-  "address": "0xd67B57F385148Ecc632d4a96716A0F9c726C26A4",
+  "address": "0x00879799E7a29e18851bF77411457AC5458AE5D4",
   "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "previousAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminChanged",
+      "type": "event"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -49,6 +68,19 @@
         }
       ],
       "name": "ApprovalForAll",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "beacon",
+          "type": "address"
+        }
+      ],
+      "name": "BeaconUpgraded",
       "type": "event"
     },
     {
@@ -231,6 +263,19 @@
         }
       ],
       "name": "Unpaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "implementation",
+          "type": "address"
+        }
+      ],
+      "name": "Upgraded",
       "type": "event"
     },
     {
@@ -651,7 +696,7 @@
           "type": "address"
         }
       ],
-      "name": "mint",
+      "name": "mintNFT",
       "outputs": [
         {
           "internalType": "uint256",
@@ -968,37 +1013,68 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeToAndCall",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
     }
   ],
-  "transactionHash": "0x488cc5d97166b9c8844af420c2b6b5f9c6b06c1394dfe523924280bd0fb5d489",
+  "transactionHash": "0x7b0a665748e3065d913d2ba727551c31bbb637f4445a70058c97209ee3a1af0e",
   "receipt": {
     "to": null,
     "from": "0xA16dFc5445112b1316F5b53f316AD146c6d36BF7",
-    "contractAddress": "0xd67B57F385148Ecc632d4a96716A0F9c726C26A4",
-    "transactionIndex": 1,
+    "contractAddress": "0x00879799E7a29e18851bF77411457AC5458AE5D4",
+    "transactionIndex": 18,
     "gasUsed": "3367624",
-    "logsBloom": "0x00000000000000020000000000000000000000000000000000000000800000000000000000000000000000000000000000008000000000000000000400000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000020000000000000000001000000000000000000000000004000000000000000000001000000000000000000000000000000100000000000000000000000001000000000000000000000000000000000000000000000100000",
-    "blockHash": "0x04b7de7ddee4765b9cdd37df0d650e766fe252f410afb3c1e7f5bc9d5b788957",
-    "transactionHash": "0x488cc5d97166b9c8844af420c2b6b5f9c6b06c1394dfe523924280bd0fb5d489",
+    "logsBloom": "0x00000000000000000000000000000000000000000020000000000000800000000000000000000000000000000000000000008000000000000000000400000000000004000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000800000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000000100000000000000000000000001000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x7602607a54cc8854161b582a438a69a354aab7e0012053fd0cdc622e3aaaa539",
+    "transactionHash": "0x7b0a665748e3065d913d2ba727551c31bbb637f4445a70058c97209ee3a1af0e",
     "logs": [
       {
-        "transactionIndex": 1,
-        "blockNumber": 21615250,
-        "transactionHash": "0x488cc5d97166b9c8844af420c2b6b5f9c6b06c1394dfe523924280bd0fb5d489",
+        "transactionIndex": 18,
+        "blockNumber": 21509171,
+        "transactionHash": "0x7b0a665748e3065d913d2ba727551c31bbb637f4445a70058c97209ee3a1af0e",
         "address": "0x0000000000000000000000000000000000001010",
         "topics": [
           "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
           "0x0000000000000000000000000000000000000000000000000000000000001010",
           "0x000000000000000000000000a16dfc5445112b1316f5b53f316ad146c6d36bf7",
-          "0x000000000000000000000000c26880a0af2ea0c7e8130e6ec47af756465452e8"
+          "0x0000000000000000000000007b5000af8ab69fd59eb0d4f5762bff57c9c04385"
         ],
-        "data": "0x000000000000000000000000000000000000000000000000000bf6d61041d0000000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000021a65a4a88d65d911820000000000000000000000000000000000000000000000000dd4bfdd9722300000000000000000000000000000000000000000000000021a65b09f63761ae182",
-        "logIndex": 2,
-        "blockHash": "0x04b7de7ddee4765b9cdd37df0d650e766fe252f410afb3c1e7f5bc9d5b788957"
+        "data": "0x00000000000000000000000000000000000000000000000002cdda2bcf6cc000000000000000000000000000000000000000000000000000154cf8b2d5b878000000000000000000000000000000000000000000000070f8dd64916e3151c8de000000000000000000000000000000000000000000000000127f1e87064bb8000000000000000000000000000000000000000000000070f8e0326b9a00be88de",
+        "logIndex": 132,
+        "blockHash": "0x7602607a54cc8854161b582a438a69a354aab7e0012053fd0cdc622e3aaaa539"
       }
     ],
-    "blockNumber": 21615250,
-    "cumulativeGasUsed": "3394344",
+    "blockNumber": 21509171,
+    "cumulativeGasUsed": "7009151",
     "status": 1,
     "byzantium": true
   },
@@ -1093,6 +1169,12 @@
       },
       "unpause()": {
         "details": "Unpauses all token transfers. See {ERC721Pausable} and {Pausable-_unpause}. Requirements: - the caller must have the `PAUSER_ROLE`."
+      },
+      "upgradeTo(address)": {
+        "details": "Upgrade the implementation of the proxy to `newImplementation`. Calls {_authorizeUpgrade}. Emits an {Upgraded} event."
+      },
+      "upgradeToAndCall(address,bytes)": {
+        "details": "Upgrade the implementation of the proxy to `newImplementation`, and subsequently execute the function call encoded in `data`. Calls {_authorizeUpgrade}. Emits an {Upgraded} event."
       }
     },
     "title": "GemCollectorNFT ",
@@ -1322,51 +1404,67 @@
         "type": "t_array(t_uint256)48_storage"
       },
       {
-        "astId": 12708,
+        "astId": 1085,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
-        "label": "tokenIds",
+        "label": "__gap",
         "offset": 0,
         "slot": "501",
-        "type": "t_struct(Counter)5366_storage"
+        "type": "t_array(t_uint256)50_storage"
+      },
+      {
+        "astId": 1252,
+        "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "551",
+        "type": "t_array(t_uint256)50_storage"
       },
       {
         "astId": 12711,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
-        "label": "levelIds",
+        "label": "tokenIds",
         "offset": 0,
-        "slot": "502",
+        "slot": "601",
         "type": "t_struct(Counter)5366_storage"
       },
       {
-        "astId": 12718,
+        "astId": 12714,
+        "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
+        "label": "levelIds",
+        "offset": 0,
+        "slot": "602",
+        "type": "t_struct(Counter)5366_storage"
+      },
+      {
+        "astId": 12721,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
         "label": "gems",
         "offset": 0,
-        "slot": "503",
+        "slot": "603",
         "type": "t_address"
       },
       {
-        "astId": 12728,
+        "astId": 12731,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
         "label": "levelIdToTokenData",
         "offset": 0,
-        "slot": "504",
-        "type": "t_mapping(t_uint256,t_struct(TokenData)12723_storage)"
+        "slot": "604",
+        "type": "t_mapping(t_uint256,t_struct(TokenData)12726_storage)"
       },
       {
-        "astId": 12732,
+        "astId": 12735,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
-        "label": "_tokenURIs",
+        "label": "tokenURIs",
         "offset": 0,
-        "slot": "505",
+        "slot": "605",
         "type": "t_mapping(t_uint256,t_string_storage)"
       },
       {
-        "astId": 12738,
+        "astId": 12741,
         "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
         "label": "hasMinted",
         "offset": 0,
-        "slot": "506",
+        "slot": "606",
         "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))"
       },
       {
@@ -1513,12 +1611,12 @@
         "numberOfBytes": "32",
         "value": "t_string_storage"
       },
-      "t_mapping(t_uint256,t_struct(TokenData)12723_storage)": {
+      "t_mapping(t_uint256,t_struct(TokenData)12726_storage)": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => struct GemCollectorNFT.TokenData)",
         "numberOfBytes": "32",
-        "value": "t_struct(TokenData)12723_storage"
+        "value": "t_struct(TokenData)12726_storage"
       },
       "t_mapping(t_uint256,t_uint256)": {
         "encoding": "mapping",
@@ -1608,12 +1706,12 @@
         ],
         "numberOfBytes": "64"
       },
-      "t_struct(TokenData)12723_storage": {
+      "t_struct(TokenData)12726_storage": {
         "encoding": "inplace",
         "label": "struct GemCollectorNFT.TokenData",
         "members": [
           {
-            "astId": 12720,
+            "astId": 12723,
             "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
             "label": "tokenUri",
             "offset": 0,
@@ -1621,7 +1719,7 @@
             "type": "t_string_storage"
           },
           {
-            "astId": 12722,
+            "astId": 12725,
             "contract": "contracts/GemCollectorNFT.sol:GemCollectorNFT",
             "label": "minRequiredGemsToMintToken",
             "offset": 0,

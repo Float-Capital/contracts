@@ -127,8 +127,8 @@ module.exports = {
       chainId: 80001,
       url: mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
       accounts: { mnemonic },
-      // gasPrice: 1000000000,
-      // gas: 15000000,
+      gasPrice: 1000000000,
+      gas: 8000000,
     },
   },
   paths: {

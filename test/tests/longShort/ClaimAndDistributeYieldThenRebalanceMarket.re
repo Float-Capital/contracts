@@ -15,6 +15,8 @@ let testUnit =
 
     let marketAmountFromYieldManager = Helpers.randomTokenAmount();
 
+    let useFundingRateFlag = Js.Math.random_int(0, 2)->bnFromInt;
+
     before_once'(() => {
       contracts.contents.longShort
       ->LongShortSmocked.InternalMock.setupFunctionForUnitTesting(
@@ -72,6 +74,22 @@ let testUnit =
           );
         };
 
+      let overBalancedSide =
+        yieldDistributedValueLong->bnGt(yieldDistributedValueShort)
+          ? yieldDistributedValueLong : yieldDistributedValueShort;
+
+      let fundingAmount =
+        useFundingRateFlag->bnGt(zeroBn)
+          ? overBalancedSide->div(Js.Math.random_int(2, 10000)->bnFromInt)
+          : zeroBn;
+
+      let fundingDeltaLong =
+        if (yieldDistributedValueLong->bnLt(yieldDistributedValueShort)) {
+          fundingAmount;
+        } else {
+          zeroBn->sub(fundingAmount);
+        };
+
       before_once'(() => {
         let%Await _ =
           contracts.contents.longShort
@@ -86,6 +104,17 @@ let testUnit =
           marketSideValueInPaymentTokenLong->bnLt(
             marketSideValueInPaymentTokenShort,
           );
+
+        let%Await _ =
+          contracts.contents.longShort
+          ->LongShortStateSetters.setFundingRateMultiplier(
+              ~marketIndex,
+              ~fundingRate=useFundingRateFlag,
+            );
+
+        LongShortSmocked.InternalMock.mock_calculateFundingAmountToReturn(
+          fundingAmount,
+        );
 
         LongShortSmocked.InternalMock.mock_getYieldSplitToReturn(
           isLongSideUnderbalanced,
@@ -134,8 +163,14 @@ let testUnit =
           let newAssetPrice = oldAssetPrice;
           let%Await {longValue, shortValue} = setup(~newAssetPrice);
 
-          Chai.bnEqual(yieldDistributedValueLong, longValue);
-          Chai.bnEqual(yieldDistributedValueShort, shortValue);
+          Chai.bnEqual(
+            yieldDistributedValueLong->add(fundingDeltaLong),
+            longValue,
+          );
+          Chai.bnEqual(
+            yieldDistributedValueShort->sub(fundingDeltaLong),
+            shortValue,
+          );
         },
       );
 
@@ -155,11 +190,23 @@ let testUnit =
           let unbalancedSidePoolValue =
             bnMin(yieldDistributedValueLong, yieldDistributedValueShort);
 
-          let valueChange =
-            newAssetPrice
-            ->sub(oldAssetPrice)
-            ->mul(unbalancedSidePoolValue)
-            ->div(oldAssetPrice);
+          let valueChangeRef =
+            ref(
+              newAssetPrice
+              ->sub(oldAssetPrice)
+              ->mul(unbalancedSidePoolValue)
+              ->div(oldAssetPrice)
+              ->add(fundingDeltaLong),
+            );
+
+          if (valueChangeRef.contents->bnGt(yieldDistributedValueShort)) {
+            valueChangeRef.contents =
+              yieldDistributedValueShort
+              ->mul(99999->bnFromInt)
+              ->div(100000->bnFromInt);
+          };
+
+          let valueChange = valueChangeRef.contents;
 
           Chai.bnEqual(
             yieldDistributedValueLong->add(valueChange),
@@ -188,11 +235,26 @@ let testUnit =
           let unbalancedSidePoolValue =
             bnMin(yieldDistributedValueLong, yieldDistributedValueShort);
 
-          let valueChange =
-            newAssetPrice
-            ->sub(oldAssetPrice)
-            ->mul(unbalancedSidePoolValue)
-            ->div(oldAssetPrice);
+          let valueChangeRef =
+            ref(
+              newAssetPrice
+              ->sub(oldAssetPrice)
+              ->mul(unbalancedSidePoolValue)
+              ->div(oldAssetPrice)
+              ->add(fundingDeltaLong),
+            );
+
+          if (valueChangeRef.contents
+              ->bnLt(zeroBn->sub(yieldDistributedValueLong))) {
+            valueChangeRef.contents =
+              zeroBn->sub(
+                yieldDistributedValueLong
+                ->mul(99999->bnFromInt)
+                ->div(100000->bnFromInt),
+              );
+          };
+
+          let valueChange = valueChangeRef.contents;
 
           Chai.bnEqual(
             yieldDistributedValueLong->add(valueChange),

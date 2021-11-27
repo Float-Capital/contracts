@@ -41,6 +41,8 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   address public constant PERMANENT_INITIAL_LIQUIDITY_HOLDER =
     0xf10A7_F10A7_f10A7_F10a7_F10A7_f10a7_F10A7_f10a7;
 
+  uint256 public constant SECONDS_IN_A_YEAR_e18 = 315576e20;
+
   /// @dev an empty allocation of storage for use in future upgrades - inspiration from OZ:
   ///      https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/10f0f1a95b1b0fd5520351886bae7a03490f1056/contracts/token/ERC20/ERC20Upgradeable.sol#L361
   uint256[45] private __constantsGap;
@@ -92,6 +94,8 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     public userNextPrice_syntheticToken_redeemAmount;
   mapping(uint32 => mapping(bool => mapping(address => uint256)))
     public userNextPrice_syntheticToken_toShiftAwayFrom_marketSide;
+
+  mapping(uint32 => uint256) public fundingRateMultiplier_e18;
 
   /*╔═════════════════════════════╗
     ║          MODIFIERS          ║
@@ -187,6 +191,14 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     uint256 _marketTreasurySplitGradient_e18
   ) external adminOnly {
     marketTreasurySplitGradient_e18[marketIndex] = _marketTreasurySplitGradient_e18;
+  }
+
+  function changeMarketFundingRateMultiplier(uint32 marketIndex, uint256 _fundingRateMultiplier_e18)
+    external
+    adminOnly
+  {
+    fundingRateMultiplier_e18[marketIndex] = _fundingRateMultiplier_e18;
+    emit MarketFundingRateMultiplerChanged(marketIndex, _fundingRateMultiplier_e18);
   }
 
   /*╔═════════════════════════════╗
@@ -633,6 +645,39 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     ║       HELPER FUNCTIONS       ║
     ╚══════════════════════════════╝*/
 
+  /// @notice This calculates the value transfer from the overbalanced to underbalanced side (i.e. the funding rate)
+  /// This is a further incentive measure to balanced markets. This may be present on some and not other synthetic markets.
+  /// @param marketIndex The market for which to execute the function for.
+  /// @param _fundingRateMultiplier_e18 A scalar base e18 for the funding rate.
+  /// @param overbalancedValue Side with more liquidity.
+  /// @param underbalancedValue Side with less liquidity.
+  /// @return fundingAmount The amount the overbalanced side needs to pay the underbalanced.
+  function _calculateFundingAmount(
+    uint32 marketIndex,
+    uint256 _fundingRateMultiplier_e18,
+    uint256 overbalancedValue,
+    uint256 underbalancedValue
+  ) internal virtual returns (uint256 fundingAmount) {
+    (uint256 lastUpdateTimestamp, , ) = IStaker(staker).accumulativeFloatPerSyntheticTokenSnapshots(
+      marketIndex,
+      marketUpdateIndex[marketIndex]
+    );
+
+    /* 
+    overBalanced * (1 - underBalanced/overBalanced)
+      = overBalanced * (overBalanced - underBalanced)/overBalanced)
+      = overBalanced - underBalanced
+      = market imbalance
+    
+    funding amount = market imbalance * yearlyMaxFundingRate * (now - lastUpdate) / (365.25days in seconds base e18)
+    */
+    fundingAmount =
+      ((overbalancedValue - underbalancedValue) *
+        _fundingRateMultiplier_e18 *
+        (block.timestamp - lastUpdateTimestamp)) /
+      SECONDS_IN_A_YEAR_e18;
+  }
+
   /// @notice First gets yield from the yield manager and allocates it to market and treasury.
   /// It then allocates the full market yield portion to the underbalanced side of the market.
   /// NB this function also adjusts the value of the long and short side based on the latest
@@ -651,7 +696,6 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     virtual
     returns (uint256 longValue, uint256 shortValue)
   {
-    int256 oldAssetPrice = assetPrice[marketIndex];
     // Claiming and distributing the yield
     longValue = marketSideValueInPaymentToken[marketIndex][true];
     shortValue = marketSideValueInPaymentToken[marketIndex][false];
@@ -670,6 +714,12 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         treasuryYieldPercent_e18
       );
 
+    // Take fee as simply 1% of notional over 1 year.
+    // Value leaving long and short to treasury, this should be done carefully in yield manager!
+    // order of where this is done is important.
+    // This amount also potentially lumped together with funding rate fee + exposure fee ?
+    // See what is simple and makes sense on the bottom line.
+
     if (marketAmount > 0) {
       if (isLongSideUnderbalanced) {
         longValue += marketAmount;
@@ -677,6 +727,8 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         shortValue += marketAmount;
       }
     }
+
+    int256 oldAssetPrice = assetPrice[marketIndex];
 
     // Adjusting value of long and short pool based on price movement
     // The side/position with less liquidity has 100% percent exposure to the price movement.
@@ -687,11 +739,28 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     // $50 * 10% = $5 gained for short side and conversely $5 lost for long side.
     int256 underbalancedSideValue = int256(Math.min(longValue, shortValue));
 
+    // send a piece of value change to the treasury?
+    // Again this reduces the value of totalValueLockedInMarket which means yield manager needs to be alerted.
     // See this equation in latex: https://ipfs.io/ipfs/QmPeJ3SZdn1GfxqCD4GDYyWTJGPMSHkjPJaxrzk2qTTPSE
     // Interact with this equation: https://www.desmos.com/calculator/t8gr6j5vsq
     int256 valueChange = ((newAssetPrice - oldAssetPrice) *
       underbalancedSideValue *
       int256(marketLeverage_e18[marketIndex])) / (oldAssetPrice * 1e18);
+
+    uint256 fundingRateMultiplier = fundingRateMultiplier_e18[marketIndex];
+    if (fundingRateMultiplier > 0) {
+      //  slow drip interest funding payment here.
+      //  recheck yield hasn't tipped the market.
+      if (longValue < shortValue) {
+        valueChange += int256(
+          _calculateFundingAmount(marketIndex, fundingRateMultiplier, shortValue, longValue)
+        );
+      } else {
+        valueChange -= int256(
+          _calculateFundingAmount(marketIndex, fundingRateMultiplier, longValue, shortValue)
+        );
+      }
+    }
 
     if (valueChange < 0) {
       valueChange = -valueChange; // make value change positive
@@ -856,7 +925,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
-    require(amount > 0, "Mint amount must be greater than 0");
+    require(amount > 0, "Mint amount == 0");
     _transferPaymentTokensFromUserToYieldManager(marketIndex, amount);
 
     batched_amountPaymentToken_deposit[marketIndex][isLong] += amount;
@@ -924,7 +993,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
-    require(tokens_redeem > 0, "Redeem amount must be greater than 0");
+    require(tokens_redeem > 0, "Redeem amount == 0");
     ISyntheticToken(syntheticTokens[marketIndex][isLong]).transferFrom(
       msg.sender,
       address(this),
@@ -974,7 +1043,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
     gemCollecting
   {
-    require(amountSyntheticTokensToShift > 0, "Shift amount must be greater than 0");
+    require(amountSyntheticTokensToShift > 0, "Shift amount == 0");
     ISyntheticToken(syntheticTokens[marketIndex][isShiftFromLong]).transferFrom(
       msg.sender,
       address(this),

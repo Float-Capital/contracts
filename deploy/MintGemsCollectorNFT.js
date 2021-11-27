@@ -12,28 +12,16 @@ const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 module.exports = async (hardhatDeployArguments) => {
   const { getNamedAccounts, deployments } = hardhatDeployArguments;
   const { deploy } = deployments;
-  const { deployer, admin, user1, user2, user3 } = await getNamedAccounts();
 
-  let Gems;
-  try {
-    Gems = await deployments.get(GEMS);
-  } catch {
-    // for testing deployment locally without running all scripts
-    Gems = { address: "0x0000000000000000000000000000000000000000" };
-  }
+  // const { deployer, admin, user1, user2, user3 } = await getNamedAccounts();
+  const accounts = await ethers.getSigners();
 
-  // should recognise as deployed already and use that contract
-  const GemCollectorNFT = await deploy(GEMS_COLLECTOR_NFT, {
-    from: deployer,
-    proxy: {
-      proxyContract: "UUPSProxy",
-      execute: {
-        methodName: "initializeNFT",
-        args: [admin, Gems.address, "Float Capital Gem Collector", "FCG"],
-      },
-    },
-    log: true,
-  });
+  const deployer = accounts[0].address;
+  const admin = accounts[1].address;
+  const user1 = accounts[2].address;
+
+  // If already deployed
+  const GemCollectorNFT = await deployments.get(GEMS_COLLECTOR_NFT);
 
   console.log("Gem collector NFT: ", GemCollectorNFT.address);
 
@@ -50,14 +38,14 @@ module.exports = async (hardhatDeployArguments) => {
     console.log("receiver");
     console.log(receiver);
     console.log("levelId");
-    console.log(levelId);
+    console.log(levelId.toString());
     console.log("tokenId");
-    console.log(tokenId);
+    console.log(tokenId.toString());
   });
 
   const levelId = 0; // APE
 
-  await mintGemsNft(gemCollectorNFT.connect(user1), levelId, user1);
+  await gemCollectorNFT.connect(accounts[2]).mintNFT(levelId, user1);
 
   // Need for event listener to pick up on event emitted
   await delay(5000);
