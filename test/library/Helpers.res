@@ -322,15 +322,15 @@ type longShortUnitTestContracts = {
   syntheticToken1Smocked: SyntheticTokenSmocked.t,
   syntheticToken2Smocked: SyntheticTokenSmocked.t,
   tokenFactorySmocked: TokenFactorySmocked.t,
-  yieldManagerSmocked: YieldManagerAaveSmocked.t,
+  yieldManagerSmocked: YieldManagerAaveBasicSmocked.t,
   oracleManagerSmocked: OracleManagerMockSmocked.t,
 }
 
 let deployAYieldManager = (~longShort: Ethers.ethAddress, ~lendingPoolAddressesProvider) => {
   ERC20Mock.make(~name="Pay Token 1", ~symbol="PT1")->Promise.then(paymentToken =>
-    YieldManagerAave.make()->Promise.then(manager =>
+    YieldManagerAaveBasic.make()->Promise.then(manager =>
       manager
-      ->YieldManagerAave.initialize(
+      ->YieldManagerAaveBasic.initialize(
         ~longShort,
         ~treasury=randomAddress(),
         ~paymentToken=paymentToken.address,
@@ -370,7 +370,7 @@ let initializeLongShortUnit = () => {
     SyntheticTokenSmocked.make(),
     SyntheticTokenSmocked.make(),
     TokenFactorySmocked.make(),
-    YieldManagerAaveSmocked.make(),
+    YieldManagerAaveBasicSmocked.make(),
     OracleManagerMockSmocked.make(),
     GEMS.make(),
   ))->Promise.thenResolve(((

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "./abstract/AccessControlledAndUpgradeable.sol";
 
@@ -25,7 +25,8 @@ contract GEMS is AccessControlledAndUpgradeable {
     address _admin,
     address _longShort,
     address _staker
-  ) public initializer {
+  ) public {
+    // The below function ensures that this contract can't be re-initialized!
     _AccessControlledAndUpgradeable_init(_admin);
     _setupRole(GEM_ROLE, _longShort);
     _setupRole(GEM_ROLE, _staker);

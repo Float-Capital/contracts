@@ -494,7 +494,7 @@ function deploy3TH_Polygon(longShortInstance, stakerInstance, treasuryInstance, 
                                                           console.log("a.3");
                                                           return LetOps.AwaitThen.let_(deployments.deploy("YieldManager3TH", {
                                                                           from: namedAccounts.deployer,
-                                                                          contract: "YieldManagerAave_Implementation",
+                                                                          contract: "YieldManagerAave",
                                                                           log: true,
                                                                           proxy: {
                                                                             proxyContract: "UUPSProxy",
@@ -554,11 +554,11 @@ function mintGemsNft(gemCollectorNFT, levelId, receiver) {
               }));
 }
 
-function deployMarketOnPolygon(longShortInstance, stakerInstance, treasuryInstance, admin, paymentToken, ohmUSDPriceFeedAddress, deployments, namedAccounts, syntheticName, syntheticSymbol, leverageAmount) {
+function deployMarketOnPolygon(longShortInstance, stakerInstance, treasuryInstance, admin, paymentToken, chainlinkOricleFeedAddress, deployments, namedAccounts, syntheticName, syntheticSymbol, leverageAmount, expectedMarketIndex, fundingRateMultiplier_e18) {
   return LetOps.AwaitThen.let_(longShortInstance.latestMarket(), (function (latestMarket) {
                 var newMarketIndex = latestMarket + 1 | 0;
-                if (newMarketIndex !== 3) {
-                  Js_exn.raiseError("Wrong market Index");
+                if (newMarketIndex !== expectedMarketIndex) {
+                  Js_exn.raiseError("Wrong market Index: " + (String(newMarketIndex) + ("(actuall index) != " + (String(expectedMarketIndex) + "(expected index)"))));
                 }
                 return LetOps.AwaitThen.let_(deployments.deploy("SS" + syntheticSymbol, {
                                 contract: "SyntheticTokenUpgradeable",
@@ -604,14 +604,14 @@ function deployMarketOnPolygon(longShortInstance, stakerInstance, treasuryInstan
                                                             contract: "OracleManagerChainlink",
                                                             args: [
                                                               namedAccounts.admin,
-                                                              ohmUSDPriceFeedAddress
+                                                              chainlinkOricleFeedAddress
                                                             ]
                                                           }), (function (oracleManager) {
                                                           console.log("a.1");
                                                           console.log("a.3");
                                                           return LetOps.AwaitThen.let_(deployments.deploy("YieldManager" + syntheticSymbol, {
                                                                           from: namedAccounts.deployer,
-                                                                          contract: "YieldManagerAave_Implementation",
+                                                                          contract: "YieldManagerAaveBasic",
                                                                           log: true,
                                                                           proxy: {
                                                                             proxyContract: "UUPSProxy",
@@ -638,14 +638,17 @@ function deployMarketOnPolygon(longShortInstance, stakerInstance, treasuryInstan
                                                                             ]);
                                                                         return LetOps.AwaitThen.let_(longShortInstance.connect(admin).createNewSyntheticMarketExternalSyntheticTokens(syntheticName, syntheticSymbol, syntheticTokenLong.address, syntheticTokenShort.address, paymentToken.address, oracleManager.address, yieldManager.address), (function (param) {
                                                                                       console.log("a.5");
-                                                                                      var kInitialMultiplier = Globals.bnFromString("2000000000000000000");
-                                                                                      var kPeriod = Globals.bnFromInt(5184000);
+                                                                                      var kInitialMultiplier = Globals.bnFromString("1000000000000000000");
+                                                                                      var kPeriod = Globals.bnFromInt(0);
                                                                                       console.log("a.6");
                                                                                       var unstakeFee_e18 = Globals.bnFromString("5000000000000000");
                                                                                       var initialMarketSeedForEachMarketSide = Globals.bnFromString("1000000000000000000");
                                                                                       return LetOps.AwaitThen.let_(paymentToken.connect(admin).approve(longShortInstance.address, Globals.mul(initialMarketSeedForEachMarketSide, Globals.bnFromInt(3))), (function (param) {
-                                                                                                    console.log("a.7");
-                                                                                                    return longShortInstance.connect(admin).initializeMarket(newMarketIndex, kInitialMultiplier, kPeriod, unstakeFee_e18, initialMarketSeedForEachMarketSide, Globals.bnFromInt(5), Globals.bnFromInt(0), CONSTANTS.tenToThe18, Globals.mul(Globals.bnFromInt(leverageAmount), CONSTANTS.tenToThe18));
+                                                                                                    console.log("a.7 - seeding from", admin);
+                                                                                                    return LetOps.AwaitThen.let_(longShortInstance.connect(admin).initializeMarket(newMarketIndex, kInitialMultiplier, kPeriod, unstakeFee_e18, initialMarketSeedForEachMarketSide, Globals.bnFromInt(5), Globals.bnFromInt(0), CONSTANTS.tenToThe18, Globals.mul(Globals.bnFromInt(leverageAmount), CONSTANTS.tenToThe18)), (function (param) {
+                                                                                                                  console.log("market launched, setting funding rate");
+                                                                                                                  return longShortInstance.connect(admin).changeMarketFundingRateMultiplier(newMarketIndex, fundingRateMultiplier_e18);
+                                                                                                                }));
                                                                                                   }));
                                                                                     }));
                                                                       }));
@@ -655,12 +658,58 @@ function deployMarketOnPolygon(longShortInstance, stakerInstance, treasuryInstan
               }));
 }
 
-function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstance, admin, paymentToken, avaxOraclePriceFeedAddress, deployments, namedAccounts) {
-  var syntheticName = "Avalanch3";
-  var syntheticSymbol = "Avax3";
+function deployAaveDAIYieldManager(deployments, syntheticSymbol, deployer, longShortInstanceAddress, treasuryInstanceAddress, paymentTokenAddress, admin) {
+  return deployments.deploy("YieldManager" + syntheticSymbol, {
+              from: deployer,
+              contract: "DefaultYieldManagerAave",
+              log: true,
+              proxy: {
+                proxyContract: "UUPSProxy",
+                execute: {
+                  methodName: "initialize",
+                  args: [
+                    longShortInstanceAddress,
+                    treasuryInstanceAddress,
+                    paymentTokenAddress,
+                    "0x47AFa96Cdc9fAb46904A55a6ad4bf6660B53c38a",
+                    "0xb6A86025F0FE1862B372cb0ca18CE3EDe02A318f",
+                    "0x01D83Fe6A10D2f2B7AF17034343746188272cAc9",
+                    0,
+                    admin.address
+                  ]
+                }
+              }
+            });
+}
+
+function deployBenqiDAIYieldManager(deployments, syntheticSymbol, deployer, longShortInstanceAddress, treasuryInstanceAddress, paymentTokenAddress, admin) {
+  return deployments.deploy("YieldManager" + syntheticSymbol, {
+              from: deployer,
+              contract: "DefaultYieldManagerCompound",
+              log: true,
+              proxy: {
+                proxyContract: "UUPSProxy",
+                execute: {
+                  methodName: "initialize",
+                  args: [
+                    longShortInstanceAddress,
+                    treasuryInstanceAddress,
+                    paymentTokenAddress,
+                    "0x835866d37AFB8CB8F8334dCCdaf66cf01832Ff5D",
+                    admin.address
+                  ]
+                }
+              }
+            });
+}
+
+function deployAvalancheMarket(longShortInstance, stakerInstance, treasuryInstance, admin, paymentToken, oraclePriceFeedAddress, deployments, namedAccounts, syntheticName, syntheticSymbol, fundingRateMultiplier, marketLeverage, expectedMarketIndex, yieldManagerVariant) {
   return LetOps.AwaitThen.let_(longShortInstance.latestMarket(), (function (latestMarket) {
                 var newMarketIndex = latestMarket + 1 | 0;
-                return LetOps.AwaitThen.let_(deployments.deploy("SSAvax3", {
+                if (newMarketIndex !== expectedMarketIndex) {
+                  Js_exn.raiseError("Wrong market Index: " + (String(newMarketIndex) + ("(actuall index) != " + (String(expectedMarketIndex) + "(expected index)"))));
+                }
+                return LetOps.AwaitThen.let_(deployments.deploy("SS" + syntheticSymbol, {
                                 contract: "SyntheticTokenUpgradeable",
                                 from: namedAccounts.deployer,
                                 log: true,
@@ -669,8 +718,8 @@ function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstanc
                                   execute: {
                                     methodName: "initialize",
                                     args: [
-                                      "Float Short Avalanch3",
-                                      "fsAvax3",
+                                      "Float Short " + syntheticName,
+                                      "fs" + syntheticSymbol,
                                       longShortInstance.address,
                                       stakerInstance.address,
                                       newMarketIndex,
@@ -679,7 +728,7 @@ function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstanc
                                   }
                                 }
                               }), (function (syntheticTokenShort) {
-                              return LetOps.AwaitThen.let_(deployments.deploy("SLAvax3", {
+                              return LetOps.AwaitThen.let_(deployments.deploy("SL" + syntheticSymbol, {
                                               from: namedAccounts.deployer,
                                               log: true,
                                               contract: "SyntheticTokenUpgradeable",
@@ -688,8 +737,8 @@ function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstanc
                                                 execute: {
                                                   methodName: "initialize",
                                                   args: [
-                                                    "Float Long Avalanch3",
-                                                    "flAvax3",
+                                                    "Float Long " + syntheticName,
+                                                    "fl" + syntheticSymbol,
                                                     longShortInstance.address,
                                                     stakerInstance.address,
                                                     newMarketIndex,
@@ -698,39 +747,20 @@ function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstanc
                                                 }
                                               }
                                             }), (function (syntheticTokenLong) {
-                                            console.log("Oracle manager!", avaxOraclePriceFeedAddress);
-                                            return LetOps.AwaitThen.let_(deployments.deploy("OracleManagerAvax3", {
+                                            console.log("Oracle manager!", oraclePriceFeedAddress);
+                                            return LetOps.AwaitThen.let_(deployments.deploy("OracleManager" + syntheticSymbol, {
                                                             from: namedAccounts.deployer,
                                                             log: true,
                                                             contract: "OracleManagerChainlink",
                                                             args: [
                                                               namedAccounts.admin,
-                                                              avaxOraclePriceFeedAddress
+                                                              oraclePriceFeedAddress
                                                             ]
                                                           }), (function (oracleManager) {
                                                           console.log("a.1");
+                                                          console.log("a.2");
                                                           console.log("a.3");
-                                                          return LetOps.AwaitThen.let_(deployments.deploy("YieldManagerAvax3", {
-                                                                          from: namedAccounts.deployer,
-                                                                          contract: "YieldManagerAave_Implementation",
-                                                                          log: true,
-                                                                          proxy: {
-                                                                            proxyContract: "UUPSProxy",
-                                                                            execute: {
-                                                                              methodName: "initialize",
-                                                                              args: [
-                                                                                longShortInstance.address,
-                                                                                treasuryInstance.address,
-                                                                                paymentToken.address,
-                                                                                "0x47AFa96Cdc9fAb46904A55a6ad4bf6660B53c38a",
-                                                                                "0xb6A86025F0FE1862B372cb0ca18CE3EDe02A318f",
-                                                                                "0x01D83Fe6A10D2f2B7AF17034343746188272cAc9",
-                                                                                0,
-                                                                                admin.address
-                                                                              ]
-                                                                            }
-                                                                          }
-                                                                        }), (function (yieldManager) {
+                                                          return LetOps.AwaitThen.let_(yieldManagerVariant ? deployBenqiDAIYieldManager(deployments, syntheticSymbol, namedAccounts.deployer, longShortInstance.address, treasuryInstance.address, paymentToken.address, admin) : deployAaveDAIYieldManager(deployments, syntheticSymbol, namedAccounts.deployer, longShortInstance.address, treasuryInstance.address, paymentToken.address, admin), (function (yieldManager) {
                                                                         console.log("a.4");
                                                                         console.log([
                                                                               yieldManager.address,
@@ -746,7 +776,10 @@ function deployAvax_Avalanche(longShortInstance, stakerInstance, treasuryInstanc
                                                                                       var initialMarketSeedForEachMarketSide = Globals.bnFromString("1000000000000000000");
                                                                                       return LetOps.AwaitThen.let_(paymentToken.connect(admin).approve(longShortInstance.address, Globals.mul(initialMarketSeedForEachMarketSide, Globals.bnFromInt(3))), (function (param) {
                                                                                                     console.log("a.7");
-                                                                                                    return longShortInstance.connect(admin).initializeMarket(newMarketIndex, kInitialMultiplier, kPeriod, unstakeFee_e18, initialMarketSeedForEachMarketSide, Globals.bnFromInt(5), Globals.bnFromInt(0), CONSTANTS.tenToThe18, Globals.mul(Globals.bnFromInt(3), CONSTANTS.tenToThe18));
+                                                                                                    return LetOps.AwaitThen.let_(longShortInstance.connect(admin).initializeMarket(newMarketIndex, kInitialMultiplier, kPeriod, unstakeFee_e18, initialMarketSeedForEachMarketSide, Globals.bnFromInt(5), Globals.bnFromInt(0), CONSTANTS.tenToThe18, Globals.mul(Globals.bnFromInt(marketLeverage), CONSTANTS.tenToThe18)), (function (param) {
+                                                                                                                  console.log("market launched, setting the funding rate");
+                                                                                                                  return longShortInstance.connect(admin).changeMarketFundingRateMultiplier(newMarketIndex, fundingRateMultiplier);
+                                                                                                                }));
                                                                                                   }));
                                                                                     }));
                                                                       }));
@@ -786,5 +819,7 @@ exports.deploy3TH_Polygon = deploy3TH_Polygon;
 exports.addGemsNfts = addGemsNfts;
 exports.mintGemsNft = mintGemsNft;
 exports.deployMarketOnPolygon = deployMarketOnPolygon;
-exports.deployAvax_Avalanche = deployAvax_Avalanche;
+exports.deployAaveDAIYieldManager = deployAaveDAIYieldManager;
+exports.deployBenqiDAIYieldManager = deployBenqiDAIYieldManager;
+exports.deployAvalancheMarket = deployAvalancheMarket;
 /* minSenderBalance Not a pure module */

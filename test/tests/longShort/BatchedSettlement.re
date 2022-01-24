@@ -480,14 +480,14 @@ let testUnit =
           "should call the depositPaymentToken function on the correct synthetic token with correct arguments.",
           () => {
           contracts.contents.yieldManagerSmocked
-          ->YieldManagerAaveSmocked.depositPaymentTokenCallCheck({
+          ->YieldManagerAaveBasicSmocked.depositPaymentTokenCallCheck({
               amount: totalPaymentTokenValueChangeForMarket,
             })
         });
         it("should NOT call the removePaymentTokenFromMarket function.", () =>
           expect(
             contracts.contents.yieldManagerSmocked
-            ->YieldManagerAaveSmocked.removePaymentTokenFromMarketFunction,
+            ->YieldManagerAaveBasicSmocked.removePaymentTokenFromMarketFunction,
           )
           ->toHaveCallCount(0)
         );
@@ -500,7 +500,7 @@ let testUnit =
 
           let _ =
             yieldManagerSmocked
-            ->YieldManagerAaveSmocked.depositPaymentTokenFunction
+            ->YieldManagerAaveBasicSmocked.depositPaymentTokenFunction
             ->SmockGeneral.reset;
 
           longShort->LongShort.Exposed._handleTotalPaymentTokenValueChangeForMarketWithYieldManagerExposed(
@@ -513,7 +513,7 @@ let testUnit =
           () =>
           expect(
             contracts.contents.yieldManagerSmocked
-            ->YieldManagerAaveSmocked.depositPaymentTokenFunction,
+            ->YieldManagerAaveBasicSmocked.depositPaymentTokenFunction,
           )
           ->toHaveCallCount(0)
         );
@@ -521,7 +521,7 @@ let testUnit =
           "should call the removePaymentTokenFromMarket function on the correct synthetic token with correct arguments.",
           () => {
           contracts.contents.yieldManagerSmocked
-          ->YieldManagerAaveSmocked.removePaymentTokenFromMarketCallCheck({
+          ->YieldManagerAaveBasicSmocked.removePaymentTokenFromMarketCallCheck({
               amount: zeroBn->sub(totalPaymentTokenValueChangeForMarket),
             })
         });
@@ -536,11 +536,11 @@ let testUnit =
 
             let _ =
               yieldManagerSmocked
-              ->YieldManagerAaveSmocked.depositPaymentTokenFunction
+              ->YieldManagerAaveBasicSmocked.depositPaymentTokenFunction
               ->SmockGeneral.reset;
             let _ =
               yieldManagerSmocked
-              ->YieldManagerAaveSmocked.removePaymentTokenFromMarketFunction
+              ->YieldManagerAaveBasicSmocked.removePaymentTokenFromMarketFunction
               ->SmockGeneral.reset;
 
             let%Await _ =
@@ -550,11 +550,11 @@ let testUnit =
               );
 
             expect(
-              yieldManagerSmocked->YieldManagerAaveSmocked.depositPaymentTokenFunction,
+              yieldManagerSmocked->YieldManagerAaveBasicSmocked.depositPaymentTokenFunction,
             )
             ->toHaveCallCount(0);
             expect(
-              yieldManagerSmocked->YieldManagerAaveSmocked.removePaymentTokenFromMarketFunction,
+              yieldManagerSmocked->YieldManagerAaveBasicSmocked.removePaymentTokenFromMarketFunction,
             )
             ->toHaveCallCount(0);
           },

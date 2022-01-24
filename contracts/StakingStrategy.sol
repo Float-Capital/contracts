@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -182,16 +182,8 @@ contract StakingStrategy is Initializable, UUPSUpgradeable, AccessControlUpgrade
     returns (uint256 longTokenPrice, uint256 shortTokenPrice)
   {
     uint256 marketUpdateIndex = ILongShort(longShort).marketUpdateIndex(marketIndex);
-    uint256 longTokenPrice = ILongShort(longShort).syntheticToken_priceSnapshot(
-      marketIndex,
-      true,
-      marketUpdateIndex
-    );
-    uint256 shortTokenPrice = ILongShort(longShort).syntheticToken_priceSnapshot(
-      marketIndex,
-      false,
-      marketUpdateIndex
-    );
+    (uint256 longTokenPrice, uint256 shortTokenPrice) = ILongShort(longShort)
+      .get_syntheticToken_priceSnapshot(marketIndex, marketUpdateIndex);
   }
 
   /*╔═════════════════════════════╗

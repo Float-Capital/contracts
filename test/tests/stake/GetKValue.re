@@ -49,7 +49,7 @@ let test =
         contracts^.staker
         ->Staker.Exposed.setGetKValueParams(
             ~marketIndex,
-            ~timestamp=pastTimestamp,
+            ~timestamp=pastTimestamp->Ethers.BigNumber.toNumber,
           );
       StakerSmocked.InternalMock.mock_getMarketLaunchIncentiveParametersToReturn(
         period,
@@ -59,31 +59,31 @@ let test =
       prom :=
         contracts^.staker->Staker.Exposed._getKValueExposed(~marketIndex);
     };
+    /* // REMOVED initial multiplier for now.
+       it(
+         "returns  kInitialMultiplier -
+                   (((kInitialMultiplier - 1e18) *
+                       (block.timestamp - initialTimestamp)) / kPeriod) if kPeriod isn't over",
+         () => {
+           let%AwaitThen _ = setup(~multiplier, ~periodShouldBeOver=false);
+           let%Await returnVal = prom^;
+           returnVal->Chai.bnEqual(
+             multiplier->Ethers.BigNumber.sub(
+               (diffRef^)
+               ->Ethers.BigNumber.mul(
+                   multiplier->Ethers.BigNumber.sub(CONSTANTS.tenToThe18),
+                 )
+               ->Ethers.BigNumber.div(periodRef^),
+             ),
+           );
+         },
+       );
 
-    it(
-      "returns  kInitialMultiplier -
-                (((kInitialMultiplier - 1e18) *
-                    (block.timestamp - initialTimestamp)) / kPeriod) if kPeriod isn't over",
-      () => {
-        let%AwaitThen _ = setup(~multiplier, ~periodShouldBeOver=false);
-        let%Await returnVal = prom^;
-        returnVal->Chai.bnEqual(
-          multiplier->Ethers.BigNumber.sub(
-            (diffRef^)
-            ->Ethers.BigNumber.mul(
-                multiplier->Ethers.BigNumber.sub(CONSTANTS.tenToThe18),
-              )
-            ->Ethers.BigNumber.div(periodRef^),
-          ),
-        );
-      },
-    );
-
-    it("reverts if kInitialMultiplier less than 1e18", () => {
-      let%Await _ =
-        setup(~multiplier=CONSTANTS.oneBn, ~periodShouldBeOver=true);
-      Chai.expectRevertNoReason(~transaction=(prom^)->Obj.magic);
-    });
+       it("reverts if kInitialMultiplier less than 1e18", () => {
+         let%Await _ =
+           setup(~multiplier=CONSTANTS.oneBn, ~periodShouldBeOver=true);
+         Chai.expectRevertNoReason(~transaction=(prom^)->Obj.magic);
+       }); */
     describe("", () => {
       // TESTING TWO THINGS
       before_once'(() => {setup(~multiplier, ~periodShouldBeOver=true)});
@@ -95,12 +95,13 @@ let test =
           returnVal->Chai.bnEqual(CONSTANTS.tenToThe18);
         },
       );
-
-      it("calls getMarketLaunchIncentiveParameters with correct arguments", () => {
-        StakerSmocked.InternalMock._getMarketLaunchIncentiveParametersCallCheck({
-          marketIndex: marketIndex,
-        })
-      });
+      /*
+       it("calls getMarketLaunchIncentiveParameters with correct arguments", () => {
+         StakerSmocked.InternalMock._getMarketLaunchIncentiveParametersCallCheck({
+           marketIndex: marketIndex,
+         })
+       });
+         */
     });
   });
 };

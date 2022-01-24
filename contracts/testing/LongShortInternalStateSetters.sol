@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "../LongShort.sol";
 
@@ -38,11 +38,11 @@ contract LongShortInternalStateSetters is LongShort {
   function set_updateSystemStateInternalGlobals(
     uint32 marketIndex,
     uint256 _latestUpdateIndexForMarket,
-    uint256 syntheticTokenPrice_inPaymentTokens_long,
-    uint256 syntheticTokenPrice_inPaymentTokens_short,
+    uint128 syntheticTokenPrice_inPaymentTokens_long,
+    uint128 syntheticTokenPrice_inPaymentTokens_short,
     int256 _assetPrice,
-    uint256 longValue,
-    uint256 shortValue,
+    uint128 longValue,
+    uint128 shortValue,
     address oracleManager,
     address _staker,
     address synthLong,
@@ -51,15 +51,17 @@ contract LongShortInternalStateSetters is LongShort {
   ) public {
     marketExists[marketIndex] = true;
     marketUpdateIndex[marketIndex] = _latestUpdateIndexForMarket;
-    syntheticToken_priceSnapshot[marketIndex][true][
+    syntheticToken_priceSnapshot[marketIndex][
       _latestUpdateIndexForMarket
-    ] = syntheticTokenPrice_inPaymentTokens_long;
-    syntheticToken_priceSnapshot[marketIndex][false][
-      _latestUpdateIndexForMarket
-    ] = syntheticTokenPrice_inPaymentTokens_short;
+    ] = SynthPriceInPaymentToken(
+      syntheticTokenPrice_inPaymentTokens_long,
+      syntheticTokenPrice_inPaymentTokens_short
+    );
 
-    marketSideValueInPaymentToken[marketIndex][true] = longValue;
-    marketSideValueInPaymentToken[marketIndex][false] = shortValue;
+    marketSideValueInPaymentToken[marketIndex] = MarketSideValueInPaymentToken(
+      longValue,
+      shortValue
+    );
 
     assetPrice[marketIndex] = _assetPrice;
     oracleManagers[marketIndex] = oracleManager;
@@ -79,8 +81,8 @@ contract LongShortInternalStateSetters is LongShort {
     uint256 _userNextPrice_currentUpdateIndex,
     uint256 _marketUpdateIndex,
     uint256 _userNextPrice_paymentToken_depositAmount_isLong,
-    uint256 _syntheticToken_priceSnapshot_isLong,
-    uint256 _syntheticToken_priceSnapshot_notIsLong,
+    uint128 _syntheticToken_priceSnapshot_long,
+    uint128 _syntheticToken_priceSnapshot_short,
     uint256 _userNextPrice_syntheticToken_toShiftAwayFrom_marketSide_notIsLong
   ) external {
     marketExists[marketIndex] = true;
@@ -92,12 +94,12 @@ contract LongShortInternalStateSetters is LongShort {
     ] = _userNextPrice_paymentToken_depositAmount_isLong;
     userNextPrice_paymentToken_depositAmount[marketIndex][!isLong][user] = 0; // reset other side for good measure
 
-    syntheticToken_priceSnapshot[marketIndex][isLong][
+    syntheticToken_priceSnapshot[marketIndex][
       _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshot_isLong;
-    syntheticToken_priceSnapshot[marketIndex][!isLong][
-      _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshot_notIsLong;
+    ] = SynthPriceInPaymentToken(
+      _syntheticToken_priceSnapshot_long,
+      _syntheticToken_priceSnapshot_short
+    );
 
     userNextPrice_syntheticToken_toShiftAwayFrom_marketSide[marketIndex][!isLong][
       user
@@ -168,15 +170,21 @@ contract LongShortInternalStateSetters is LongShort {
     address syntheticToken,
     uint256 _userNextPrice_syntheticToken_redeemAmount,
     uint256 _userNextPrice_currentUpdateIndex,
-    uint256 _syntheticToken_priceSnapshot
+    uint128 _syntheticToken_priceSnapshot
   ) external {
     userNextPrice_paymentToken_depositAmount[marketIndex][isLong][
       user
     ] = _userNextPrice_syntheticToken_redeemAmount;
     userNextPrice_currentUpdateIndex[marketIndex][user] = _userNextPrice_currentUpdateIndex;
-    syntheticToken_priceSnapshot[marketIndex][isLong][
+
+    SynthPriceInPaymentToken storage priceSnapshot = syntheticToken_priceSnapshot[marketIndex][
       _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshot;
+    ];
+    if (isLong) {
+      priceSnapshot.price_long = _syntheticToken_priceSnapshot;
+    } else {
+      priceSnapshot.price_short = _syntheticToken_priceSnapshot;
+    }
     syntheticTokens[marketIndex][isLong] = syntheticToken;
   }
 
@@ -187,15 +195,20 @@ contract LongShortInternalStateSetters is LongShort {
     address yieldManager,
     uint256 _userNextPrice_syntheticToken_redeemAmount,
     uint256 _userNextPrice_currentUpdateIndex,
-    uint256 _syntheticToken_priceSnapshot
+    uint128 _syntheticToken_priceSnapshot
   ) external {
     userNextPrice_syntheticToken_redeemAmount[marketIndex][isLong][
       user
     ] = _userNextPrice_syntheticToken_redeemAmount;
     userNextPrice_currentUpdateIndex[marketIndex][user] = _userNextPrice_currentUpdateIndex;
-    syntheticToken_priceSnapshot[marketIndex][isLong][
+    SynthPriceInPaymentToken storage priceSnapshot = syntheticToken_priceSnapshot[marketIndex][
       _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshot;
+    ];
+    if (isLong) {
+      priceSnapshot.price_long = _syntheticToken_priceSnapshot;
+    } else {
+      priceSnapshot.price_short = _syntheticToken_priceSnapshot;
+    }
     yieldManagers[marketIndex] = yieldManager;
   }
 
@@ -206,19 +219,23 @@ contract LongShortInternalStateSetters is LongShort {
     address syntheticTokenShiftedTo,
     uint256 _userNextPrice_syntheticToken_toShiftAwayFrom_marketSide,
     uint256 _userNextPrice_currentUpdateIndex,
-    uint256 _syntheticToken_priceSnapshotShiftedFrom,
-    uint256 _syntheticToken_priceSnapshotShiftedTo
+    uint128 _syntheticToken_priceSnapshotShiftedFrom,
+    uint128 _syntheticToken_priceSnapshotShiftedTo
   ) external {
     userNextPrice_syntheticToken_toShiftAwayFrom_marketSide[marketIndex][isShiftFromLong][
       user
     ] = _userNextPrice_syntheticToken_toShiftAwayFrom_marketSide;
     userNextPrice_currentUpdateIndex[marketIndex][user] = _userNextPrice_currentUpdateIndex;
-    syntheticToken_priceSnapshot[marketIndex][isShiftFromLong][
+    SynthPriceInPaymentToken storage priceSnapshot = syntheticToken_priceSnapshot[marketIndex][
       _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshotShiftedFrom;
-    syntheticToken_priceSnapshot[marketIndex][!isShiftFromLong][
-      _userNextPrice_currentUpdateIndex
-    ] = _syntheticToken_priceSnapshotShiftedTo;
+    ];
+    if (isShiftFromLong) {
+      priceSnapshot.price_long = _syntheticToken_priceSnapshotShiftedFrom;
+      priceSnapshot.price_short = _syntheticToken_priceSnapshotShiftedTo;
+    } else {
+      priceSnapshot.price_short = _syntheticToken_priceSnapshotShiftedFrom;
+      priceSnapshot.price_long = _syntheticToken_priceSnapshotShiftedTo;
+    }
     syntheticTokens[marketIndex][!isShiftFromLong] = syntheticTokenShiftedTo;
   }
 
@@ -234,12 +251,14 @@ contract LongShortInternalStateSetters is LongShort {
 
   function setClaimAndDistributeYieldThenRebalanceMarketGlobals(
     uint32 marketIndex,
-    uint256 _marketSideValueInPaymentTokenLong,
-    uint256 _marketSideValueInPaymentTokenShort,
+    uint128 _marketSideValueInPaymentTokenLong,
+    uint128 _marketSideValueInPaymentTokenShort,
     address yieldManager
   ) external {
-    marketSideValueInPaymentToken[marketIndex][true] = _marketSideValueInPaymentTokenLong;
-    marketSideValueInPaymentToken[marketIndex][false] = _marketSideValueInPaymentTokenShort;
+    marketSideValueInPaymentToken[marketIndex] = MarketSideValueInPaymentToken(
+      _marketSideValueInPaymentTokenLong,
+      _marketSideValueInPaymentTokenShort
+    );
     yieldManagers[marketIndex] = yieldManager;
   }
 

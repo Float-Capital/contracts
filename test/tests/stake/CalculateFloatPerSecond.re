@@ -57,9 +57,10 @@ let test =
           ~functionName="_calculateFloatPerSecond",
         );
 
-      longShortSmocked->LongShortSmocked.mockMarketSideValueInPaymentTokenToReturn(
+      longShortSmocked->LongShortSmocked.mockMarketSideValueInPaymentTokenToReturn((
         CONSTANTS.tenToThe18,
-      );
+        CONSTANTS.tenToThe18,
+      ));
 
       let%Await _ =
         staker->Staker.Exposed._changeBalanceIncentiveParametersExposed(

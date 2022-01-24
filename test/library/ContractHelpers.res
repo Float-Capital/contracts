@@ -5,6 +5,7 @@ type bytes4
 type bytes32
 type tuple // used by some open-zeppelin contracts
 type transaction = unit // TODO: make this better
+type unknownType // Just for unclassified ethereum type stuff in generated code
 
 @val @scope("ethers")
 external getContractFactory: string => Promise.t<contractFactory> = "getContractFactory"

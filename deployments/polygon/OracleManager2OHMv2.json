@@ -1,0 +1,198 @@
+{
+  "address": "0x4518502fcD88E7d39AD650E0290a8113Baab3077",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_admin",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_chainlinkOracle",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "chainlinkOracle",
+      "outputs": [
+        {
+          "internalType": "contract AggregatorV3Interface",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_admin",
+          "type": "address"
+        }
+      ],
+      "name": "changeAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLatestPrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracleDecimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updatePrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6162b9d676cfdd5392a239fca34fc34262ca2c07a61cde672c878d1bb50ab360",
+  "receipt": {
+    "to": null,
+    "from": "0x921c380d6047f09a4E61D29d1Fc054fB52259CA9",
+    "contractAddress": "0x4518502fcD88E7d39AD650E0290a8113Baab3077",
+    "transactionIndex": 68,
+    "gasUsed": "267853",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000400000000000000000000000000000000008000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000018000001000000000000000000000000000000100000000000000000000000000200000000000000000000000100000000000000000000100000",
+    "blockHash": "0x84aec338f1b1830afab43009167b8f25321d35a46ca1938e4d9720f9e4957900",
+    "transactionHash": "0x6162b9d676cfdd5392a239fca34fc34262ca2c07a61cde672c878d1bb50ab360",
+    "logs": [
+      {
+        "transactionIndex": 68,
+        "blockNumber": 23685742,
+        "transactionHash": "0x6162b9d676cfdd5392a239fca34fc34262ca2c07a61cde672c878d1bb50ab360",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000921c380d6047f09a4e61d29d1fc054fb52259ca9",
+          "0x00000000000000000000000018f371aeee4e2636df789931c9cd43e5d7b72d66"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000003918a72f057800000000000000000000000000000000000000000000000000069c5a1e945f37420000000000000000000000000000000000000000000001165b8face819411d83000000000000000000000000000000000000000000000000066341776559bf420000000000000000000000000000000000000000000001165bc8c58f48469583",
+        "logIndex": 353,
+        "blockHash": "0x84aec338f1b1830afab43009167b8f25321d35a46ca1938e4d9720f9e4957900"
+      }
+    ],
+    "blockNumber": 23685742,
+    "cumulativeGasUsed": "12018115",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xcfcCB5e6b3882b7795eb1B1A9f18831A842d4eE0",
+    "0x4cE90F28C6357A7d3F47D680723d18AF3684cD00"
+  ],
+  "solcInputHash": "be5ba349416d5987e0a4132c877967d1",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_chainlinkOracle\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"chainlinkOracle\",\"outputs\":[{\"internalType\":\"contract AggregatorV3Interface\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestPrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"oracleDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updatePrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"changeAdmin(address)\":{\"notice\":\"MULTISIG ADMIN FUNCTIONS ///////\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/oracles/OracleManagerChainlink.sol\":\"OracleManagerChainlink\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\ninterface AggregatorV3Interface {\\n\\n  function decimals()\\n    external\\n    view\\n    returns (\\n      uint8\\n    );\\n\\n  function description()\\n    external\\n    view\\n    returns (\\n      string memory\\n    );\\n\\n  function version()\\n    external\\n    view\\n    returns (\\n      uint256\\n    );\\n\\n  // getRoundData and latestRoundData should both raise \\\"No data present\\\"\\n  // if they do not have data to report, instead of returning unset values\\n  // which could be misinterpreted as actual reported values.\\n  function getRoundData(\\n    uint80 _roundId\\n  )\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n  function latestRoundData()\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n}\\n\",\"keccak256\":\"0xe6f5ac8c47f3b9b6135051efb9216f9ba5b312a6ecc20209b4f66a780443c328\",\"license\":\"MIT\"},\"contracts/interfaces/IOracleManager.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.10;\\n\\n/*\\n * Manages price feeds from different oracle implementations.\\n */\\ninterface IOracleManager {\\n  function updatePrice() external returns (int256);\\n\\n  /*\\n   *Returns the latest price from the oracle feed.\\n   */\\n  function getLatestPrice() external view returns (int256);\\n}\\n\",\"keccak256\":\"0xb63c1794b7f637c55b84fbcbf80f15ef52d913a936fe8478b16b56c2dd5c4213\",\"license\":\"BUSL-1.1\"},\"contracts/oracles/OracleManagerChainlink.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.10;\\n\\nimport \\\"../interfaces/IOracleManager.sol\\\";\\nimport \\\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\\\";\\n\\n/*\\n * Implementation of an OracleManager that fetches prices from a Chainlink aggregate price feed.\\n */\\ncontract OracleManagerChainlink is IOracleManager {\\n  // Admin addresses.\\n  address public admin;\\n  // Global state.\\n  AggregatorV3Interface public chainlinkOracle;\\n  uint8 public oracleDecimals;\\n\\n  ////////////////////////////////////\\n  /////////// MODIFIERS //////////////\\n  ////////////////////////////////////\\n\\n  modifier adminOnly() {\\n    require(msg.sender == admin, \\\"Not admin\\\");\\n    _;\\n  }\\n\\n  ////////////////////////////////////\\n  ///// CONTRACT SET-UP //////////////\\n  ////////////////////////////////////\\n  constructor(address _admin, address _chainlinkOracle) {\\n    admin = _admin;\\n    chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);\\n    oracleDecimals = chainlinkOracle.decimals();\\n  }\\n\\n  ////////////////////////////////////\\n  /// MULTISIG ADMIN FUNCTIONS ///////\\n  ////////////////////////////////////\\n\\n  function changeAdmin(address _admin) external adminOnly {\\n    admin = _admin;\\n  }\\n\\n  ////////////////////////////////////\\n  ///// IMPLEMENTATION ///////////////\\n  ////////////////////////////////////\\n  function _getLatestPrice() internal view returns (int256) {\\n    (, int256 price, , , ) = chainlinkOracle.latestRoundData();\\n    return price;\\n  }\\n\\n  function getLatestPrice() external view override returns (int256) {\\n    return _getLatestPrice();\\n  }\\n\\n  function updatePrice() external virtual override returns (int256) {\\n    return _getLatestPrice();\\n  }\\n}\\n\",\"keccak256\":\"0xa76d97fedaec47c96d1db1c5a3a5c620db4971e0c604fa7b48be3dfb9b0ab17c\",\"license\":\"BUSL-1.1\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161043538038061043583398101604081905261002f916100f9565b600080546001600160a01b038085166001600160a01b0319928316179092556001805492841692909116821790556040805163313ce56760e01b8152905163313ce567916004808201926020929091908290030181865afa158015610098573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906100bc919061012c565b600160146101000a81548160ff021916908360ff1602179055505050610156565b80516001600160a01b03811681146100f457600080fd5b919050565b6000806040838503121561010c57600080fd5b610115836100dd565b9150610123602084016100dd565b90509250929050565b60006020828403121561013e57600080fd5b815160ff8116811461014f57600080fd5b9392505050565b6102d0806101656000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c8063673a7e28146100675780638e15f473146100675780638f28397014610082578063e68b52e714610097578063ef06e72c146100bd578063f851a440146100e8575b600080fd5b61006f6100fb565b6040519081526020015b60405180910390f35b6100956100903660046101fb565b61010a565b005b6001546100ab90600160a01b900460ff1681565b60405160ff9091168152602001610079565b6001546100d0906001600160a01b031681565b6040516001600160a01b039091168152602001610079565b6000546100d0906001600160a01b031681565b6000610105610176565b905090565b6000546001600160a01b031633146101545760405162461bcd60e51b81526020600482015260096024820152682737ba1030b236b4b760b91b604482015260640160405180910390fd5b600080546001600160a01b0319166001600160a01b0392909216919091179055565b600080600160009054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a060405180830381865afa1580156101cc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101f0919061024a565b509195945050505050565b60006020828403121561020d57600080fd5b81356001600160a01b038116811461022457600080fd5b9392505050565b805169ffffffffffffffffffff8116811461024557600080fd5b919050565b600080600080600060a0868803121561026257600080fd5b61026b8661022b565b945060208601519350604086015192506060860151915061028e6080870161022b565b9050929550929590935056fea2646970667358221220f06ce7577f2a2525750b328eba95a1c7fc10dfe5ea2cdeb26fb1e059af7845bf64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c8063673a7e28146100675780638e15f473146100675780638f28397014610082578063e68b52e714610097578063ef06e72c146100bd578063f851a440146100e8575b600080fd5b61006f6100fb565b6040519081526020015b60405180910390f35b6100956100903660046101fb565b61010a565b005b6001546100ab90600160a01b900460ff1681565b60405160ff9091168152602001610079565b6001546100d0906001600160a01b031681565b6040516001600160a01b039091168152602001610079565b6000546100d0906001600160a01b031681565b6000610105610176565b905090565b6000546001600160a01b031633146101545760405162461bcd60e51b81526020600482015260096024820152682737ba1030b236b4b760b91b604482015260640160405180910390fd5b600080546001600160a01b0319166001600160a01b0392909216919091179055565b600080600160009054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a060405180830381865afa1580156101cc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101f0919061024a565b509195945050505050565b60006020828403121561020d57600080fd5b81356001600160a01b038116811461022457600080fd5b9392505050565b805169ffffffffffffffffffff8116811461024557600080fd5b919050565b600080600080600060a0868803121561026257600080fd5b61026b8661022b565b945060208601519350604086015192506060860151915061028e6080870161022b565b9050929550929590935056fea2646970667358221220f06ce7577f2a2525750b328eba95a1c7fc10dfe5ea2cdeb26fb1e059af7845bf64736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "changeAdmin(address)": {
+        "notice": "MULTISIG ADMIN FUNCTIONS ///////"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 25160,
+        "contract": "contracts/oracles/OracleManagerChainlink.sol:OracleManagerChainlink",
+        "label": "admin",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 25163,
+        "contract": "contracts/oracles/OracleManagerChainlink.sol:OracleManagerChainlink",
+        "label": "chainlinkOracle",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(AggregatorV3Interface)45"
+      },
+      {
+        "astId": 25165,
+        "contract": "contracts/oracles/OracleManagerChainlink.sol:OracleManagerChainlink",
+        "label": "oracleDecimals",
+        "offset": 20,
+        "slot": "1",
+        "type": "t_uint8"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(AggregatorV3Interface)45": {
+        "encoding": "inplace",
+        "label": "contract AggregatorV3Interface",
+        "numberOfBytes": "20"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}

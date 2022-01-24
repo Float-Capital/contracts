@@ -123,16 +123,6 @@ let test =
               floatRewardsForMarkets->Array.getUnsafe(0),
             )
         });
-
-        it("mutates userIndexOfLastClaimedReward", () => {
-          let%Await lastClaimed =
-            contracts^.staker
-            ->Staker.userIndexOfLastClaimedReward(
-                marketIndices->Array.getUnsafe(0),
-                userWalletRef^.address,
-              );
-          lastClaimed->Chai.bnEqual(latestRewardIndices->Array.getUnsafe(0));
-        });
       });
 
       describe("case market has no float to mint", () => {

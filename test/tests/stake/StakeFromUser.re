@@ -85,8 +85,10 @@ let test =
         )
       );
 
-      it("calls mintAccumulatedFloat with correct args", () => {
-        StakerSmocked.InternalMock._mintAccumulatedFloatAndExecuteOutstandingActionsCallCheck({
+      it(
+        "calls updateUsersStakedPosition_mintAccumulatedFloat with correct args",
+        () => {
+        StakerSmocked.InternalMock._updateUsersStakedPosition_mintAccumulatedFloatAndExecuteOutstandingNextPriceActionsCallCheck({
           marketIndex: marketIndexForToken,
           user: from,
         })

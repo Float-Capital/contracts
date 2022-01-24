@@ -17,12 +17,6 @@ let testIntegration =
 
       let currentSynth = isLong ? longSynth : shortSynth;
 
-      let%AwaitThen _longValueBefore =
-        longShort->LongShort.marketSideValueInPaymentToken(
-          marketIndex,
-          isLong,
-        );
-
       let%AwaitThen _ =
         paymentToken->ERC20Mock.mint(
           ~_to=testUser.address,

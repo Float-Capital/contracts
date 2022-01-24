@@ -78,13 +78,6 @@ let test =
             floatToMintLong->add(floatToMintShort),
           )
       });
-
-      it("mutates userIndexOfLastClaimedReward", () => {
-        let%Await lastClaimed =
-          contracts^.staker
-          ->Staker.userIndexOfLastClaimedReward(marketIndex, user);
-        lastClaimed->Chai.bnEqual(latestRewardIndexForMarket);
-      });
     });
 
     describe("case floatToMint == 0", () => {

@@ -26,11 +26,9 @@ let testIntegration =
       } =
         markets->Array.getUnsafe(0);
 
-      let%AwaitThen _longValueBefore =
-        longShort->LongShort.marketSideValueInPaymentToken(
-          marketIndex,
-          true /*long*/,
-        );
+      // let%AwaitThen _longValueBefore =
+      //   longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+      //   // true /*long*/,
 
       let%AwaitThen _ =
         paymentToken->ERC20Mock.mint(
@@ -177,7 +175,6 @@ let testUnit =
 
     let testMarketSide = (~isLong) => {
       before_once'(() => {
-        Js.log("Running" ++ (isLong ? "Long" : "Short"));
         let testWallet = accounts.contents->Array.getUnsafe(1);
 
         let%AwaitThen _ =

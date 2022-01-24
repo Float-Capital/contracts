@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -24,7 +24,8 @@ contract Treasury_v0 is AccessControlledAndUpgradeable {
     address _paymentToken,
     address _floatToken,
     address _longShort
-  ) public initializer {
+  ) public {
+    // The below function ensures that this contract can't be re-initialized!
     _AccessControlledAndUpgradeable_init(_admin);
     paymentToken = _paymentToken;
     floatToken = _floatToken;

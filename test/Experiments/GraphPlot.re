@@ -77,16 +77,12 @@ let generateTestData =
 
               let%AwaitThen _ =
                 longShort->LongShort.updateSystemState(~marketIndex);
-              let%AwaitThen shortValue =
+              let%AwaitThen marketValue =
                 longShort->LongShort.marketSideValueInPaymentToken(
                   marketIndex,
-                  false /*short*/,
                 );
-              let%AwaitThen longValue =
-                longShort->LongShort.marketSideValueInPaymentToken(
-                  marketIndex,
-                  true /*long*/,
-                );
+              let longValue = marketValue.value_long;
+              let shortValue = marketValue.value_short;
 
               (
                 newPrice,
@@ -143,16 +139,12 @@ let generateTestData =
                 oracleManager->OracleManagerMock.setPrice(~newPrice);
               let%AwaitThen _ =
                 longShort->LongShort.updateSystemState(~marketIndex);
-              let%AwaitThen shortValue =
+              let%AwaitThen marketValue =
                 longShort->LongShort.marketSideValueInPaymentToken(
                   marketIndex,
-                  false /*short*/,
                 );
-              let%AwaitThen longValue =
-                longShort->LongShort.marketSideValueInPaymentToken(
-                  marketIndex,
-                  true /*long*/,
-                );
+              let longValue = marketValue.value_long;
+              let shortValue = marketValue.value_short;
 
               (
                 newPrice,

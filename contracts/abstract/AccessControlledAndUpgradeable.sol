@@ -4,6 +4,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 abstract contract AccessControlledAndUpgradeable is
   Initializable,
   AccessControlUpgradeable,
@@ -23,10 +25,7 @@ abstract contract AccessControlledAndUpgradeable is
   /// @notice Initializes the contract for contracts that already call both __AccessControl_init
   ///         and _UUPSUpgradeable_init when initializing.
   /// @param initialAdmin The initial admin who will hold all roles.
-  function _AccessControlledAndUpgradeable_init_unchained(address initialAdmin)
-    internal
-    initializer
-  {
+  function _AccessControlledAndUpgradeable_init_unchained(address initialAdmin) internal {
     require(initialAdmin != address(0));
     _setupRole(DEFAULT_ADMIN_ROLE, initialAdmin);
     _setupRole(ADMIN_ROLE, initialAdmin);

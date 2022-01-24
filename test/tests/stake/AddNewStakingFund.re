@@ -59,11 +59,10 @@ let test =
     });
 
     it("calls _changeUnstakeFee with correct arguments", () => {
-      Js.log(9);
       StakerSmocked.InternalMock._changeUnstakeFeeCallCheck({
         marketIndex,
         newMarketUnstakeFee_e18: unstakeFee_e18,
-      });
+      })
     });
 
     it("mutates accumulativeFloatPerSyntheticTokenSnapshots", () => {
@@ -75,7 +74,7 @@ let test =
           );
 
       params->Chai.recordEqualFlat({
-        timestamp: Ethers.BigNumber.fromInt(timestampRef^ + 1), // one second per block in hardhat
+        timestamp: timestampRef^ + 1, // one second per block in hardhat
         accumulativeFloatPerSyntheticToken_long: CONSTANTS.zeroBn,
         accumulativeFloatPerSyntheticToken_short: CONSTANTS.zeroBn,
       });

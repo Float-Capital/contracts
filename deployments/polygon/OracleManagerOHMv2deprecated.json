@@ -1,0 +1,225 @@
+{
+  "address": "0x5aBf3cb1616944143A7D617d8a81aDFDe7A57257",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_admin",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_chainlinkOracle",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_longShort",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "chainlinkOracle",
+      "outputs": [
+        {
+          "internalType": "contract AggregatorV3Interface",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_admin",
+          "type": "address"
+        }
+      ],
+      "name": "changeAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLatestPrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracleDecimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updatePrice",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x572261afc99812d8c488d47e125fabad4799d373e8fe8b4c419f6c0904af1e31",
+  "receipt": {
+    "to": null,
+    "from": "0x921c380d6047f09a4E61D29d1Fc054fB52259CA9",
+    "contractAddress": "0x5aBf3cb1616944143A7D617d8a81aDFDe7A57257",
+    "transactionIndex": 3,
+    "gasUsed": "332053",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000108000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000040000100000000000000000000000000000000000000000000000004000000000000008000001000000000000000000000000000000100000000000000000000000000200000000000000000000000000000000000000000000100000",
+    "blockHash": "0x5aeb8dcdff83c4ee756cfe6be48e860cac6f57eb8f24074e5423d2462bc3f51e",
+    "transactionHash": "0x572261afc99812d8c488d47e125fabad4799d373e8fe8b4c419f6c0904af1e31",
+    "logs": [
+      {
+        "transactionIndex": 3,
+        "blockNumber": 23706379,
+        "transactionHash": "0x572261afc99812d8c488d47e125fabad4799d373e8fe8b4c419f6c0904af1e31",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000921c380d6047f09a4e61d29d1fc054fb52259ca9",
+          "0x00000000000000000000000026c80cc193b27d73d2c40943acec77f4da2c5bd8"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000d458147816a800000000000000000000000000000000000000000000000005673b48b2213be74200000000000000000000000000000000000000000000025a992423ecc9ef97050000000000000000000000000000000000000000000000056666f09da9253f4200000000000000000000000000000000000000000000025a99f87c0142063f05",
+        "logIndex": 9,
+        "blockHash": "0x5aeb8dcdff83c4ee756cfe6be48e860cac6f57eb8f24074e5423d2462bc3f51e"
+      }
+    ],
+    "blockNumber": 23706379,
+    "cumulativeGasUsed": "556006",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xcfcCB5e6b3882b7795eb1B1A9f18831A842d4eE0",
+    "0x4cE90F28C6357A7d3F47D680723d18AF3684cD00",
+    "0x168a5d1217AEcd258b03018d5bF1A1677A07b733"
+  ],
+  "solcInputHash": "d14ad54736ce61e137a41c67a1b9c3a6",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_chainlinkOracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_longShort\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"chainlinkOracle\",\"outputs\":[{\"internalType\":\"contract AggregatorV3Interface\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestPrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"oracleDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updatePrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"changeAdmin(address)\":{\"notice\":\"MULTISIG ADMIN FUNCTIONS ///////\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol\":\"DeprecatedOracleManagerChainlink\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\ninterface AggregatorV3Interface {\\n\\n  function decimals()\\n    external\\n    view\\n    returns (\\n      uint8\\n    );\\n\\n  function description()\\n    external\\n    view\\n    returns (\\n      string memory\\n    );\\n\\n  function version()\\n    external\\n    view\\n    returns (\\n      uint256\\n    );\\n\\n  // getRoundData and latestRoundData should both raise \\\"No data present\\\"\\n  // if they do not have data to report, instead of returning unset values\\n  // which could be misinterpreted as actual reported values.\\n  function getRoundData(\\n    uint80 _roundId\\n  )\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n  function latestRoundData()\\n    external\\n    view\\n    returns (\\n      uint80 roundId,\\n      int256 answer,\\n      uint256 startedAt,\\n      uint256 updatedAt,\\n      uint80 answeredInRound\\n    );\\n\\n}\\n\",\"keccak256\":\"0xe6f5ac8c47f3b9b6135051efb9216f9ba5b312a6ecc20209b4f66a780443c328\",\"license\":\"MIT\"},\"contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.10;\\n\\nimport \\\"../oracles/OracleManagerChainlink.sol\\\";\\n\\ncontract DeprecatedOracleManagerChainlink is OracleManagerChainlink {\\n  int256 forcedPriceAdjustment;\\n  int256 immutable frozenFinalOraclePrice;\\n  address longShort;\\n\\n  constructor(\\n    address _admin,\\n    address _chainlinkOracle,\\n    address _longShort\\n  ) OracleManagerChainlink(_admin, _chainlinkOracle) {\\n    (, int256 price, , , ) = chainlinkOracle.latestRoundData();\\n    frozenFinalOraclePrice = price;\\n\\n    longShort = _longShort;\\n  }\\n\\n  function _getLatestPrice() internal override view returns (int256) {\\n    int256 priceAdjustment = forcedPriceAdjustment;\\n    priceAdjustment = (priceAdjustment + 1) % 2;\\n  \\n    return frozenFinalOraclePrice + priceAdjustment;\\n  }\\n\\n  function updatePrice() external override returns (int256) {\\n    require(msg.sender == longShort, \\\"Only long short\\\");\\n\\n    int256 priceAdjustment = forcedPriceAdjustment;\\n    priceAdjustment = (priceAdjustment + 1) % 2;\\n    forcedPriceAdjustment = priceAdjustment;\\n  \\n    return frozenFinalOraclePrice + priceAdjustment;\\n  }\\n}\\n\",\"keccak256\":\"0xb4f7f453961c60d3be622e50332b05293dd0cef58241cdb2a679c829e889d769\",\"license\":\"BUSL-1.1\"},\"contracts/interfaces/IOracleManager.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.10;\\n\\n/*\\n * Manages price feeds from different oracle implementations.\\n */\\ninterface IOracleManager {\\n  function updatePrice() external returns (int256);\\n\\n  /*\\n   *Returns the latest price from the oracle feed.\\n   */\\n  function getLatestPrice() external view returns (int256);\\n}\\n\",\"keccak256\":\"0xb63c1794b7f637c55b84fbcbf80f15ef52d913a936fe8478b16b56c2dd5c4213\",\"license\":\"BUSL-1.1\"},\"contracts/oracles/OracleManagerChainlink.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\n\\npragma solidity 0.8.10;\\n\\nimport \\\"../interfaces/IOracleManager.sol\\\";\\nimport \\\"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\\\";\\n\\n/*\\n * Implementation of an OracleManager that fetches prices from a Chainlink aggregate price feed.\\n */\\ncontract OracleManagerChainlink is IOracleManager {\\n  // Admin addresses.\\n  address public admin;\\n  // Global state.\\n  AggregatorV3Interface public chainlinkOracle;\\n  uint8 public oracleDecimals;\\n\\n  ////////////////////////////////////\\n  /////////// MODIFIERS //////////////\\n  ////////////////////////////////////\\n\\n  modifier adminOnly() {\\n    require(msg.sender == admin, \\\"Not admin\\\");\\n    _;\\n  }\\n\\n  ////////////////////////////////////\\n  ///// CONTRACT SET-UP //////////////\\n  ////////////////////////////////////\\n  constructor(address _admin, address _chainlinkOracle) {\\n    admin = _admin;\\n    chainlinkOracle = AggregatorV3Interface(_chainlinkOracle);\\n    oracleDecimals = chainlinkOracle.decimals();\\n  }\\n\\n  ////////////////////////////////////\\n  /// MULTISIG ADMIN FUNCTIONS ///////\\n  ////////////////////////////////////\\n\\n  function changeAdmin(address _admin) external adminOnly {\\n    admin = _admin;\\n  }\\n\\n  ////////////////////////////////////\\n  ///// IMPLEMENTATION ///////////////\\n  ////////////////////////////////////\\n  function _getLatestPrice() internal virtual view returns (int256) {\\n    (, int256 price, , , ) = chainlinkOracle.latestRoundData();\\n    return price;\\n  }\\n\\n  function getLatestPrice() external view override returns (int256) {\\n    return _getLatestPrice();\\n  }\\n\\n  function updatePrice() external virtual override returns (int256) {\\n    return _getLatestPrice();\\n  }\\n}\\n\",\"keccak256\":\"0xb565872ebf7bf379b12fc618af93625696bd1c0c3d526017a901acc91a734c6f\",\"license\":\"BUSL-1.1\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b506040516105df3803806105df83398101604081905261002f916101a3565b600080546001600160a01b038086166001600160a01b0319928316179092556001805492851692909116821790556040805163313ce56760e01b8152905185928592909163313ce567916004808201926020929091908290030181865afa15801561009e573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906100c291906101e6565b600160146101000a81548160ff021916908360ff16021790555050506000600160009054906101000a90046001600160a01b03166001600160a01b031663feaf968c6040518163ffffffff1660e01b815260040160a060405180830381865afa158015610133573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101579190610227565b5050506080525050600380546001600160a01b0319166001600160a01b0392909216919091179055506102779050565b80516001600160a01b038116811461019e57600080fd5b919050565b6000806000606084860312156101b857600080fd5b6101c184610187565b92506101cf60208501610187565b91506101dd60408501610187565b90509250925092565b6000602082840312156101f857600080fd5b815160ff8116811461020957600080fd5b9392505050565b80516001600160501b038116811461019e57600080fd5b600080600080600060a0868803121561023f57600080fd5b61024886610210565b945060208601519350604086015192506060860151915061026b60808701610210565b90509295509295909350565b6080516103466102996000396000818161017e015261024301526103466000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c8063673a7e28146100675780638e15f473146100825780638f2839701461008a578063e68b52e71461009f578063ef06e72c146100c5578063f851a440146100f0575b600080fd5b61006f610103565b6040519081526020015b60405180910390f35b61006f6101a8565b61009d610098366004610267565b6101b7565b005b6001546100b390600160a01b900460ff1681565b60405160ff9091168152602001610079565b6001546100d8906001600160a01b031681565b6040516001600160a01b039091168152602001610079565b6000546100d8906001600160a01b031681565b6003546000906001600160a01b031633146101575760405162461bcd60e51b815260206004820152600f60248201526e13db9b1e481b1bdb99c81cda1bdc9d608a1b60448201526064015b60405180910390fd5b60028054906101678260016102ad565b61017191906102ee565b600281905590506101a2817f00000000000000000000000000000000000000000000000000000000000000006102ad565b91505090565b60006101b261021f565b905090565b6000546001600160a01b031633146101fd5760405162461bcd60e51b81526020600482015260096024820152682737ba1030b236b4b760b91b604482015260640161014e565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b600280546000916102318260016102ad565b61023b91906102ee565b90506101a2817f00000000000000000000000000000000000000000000000000000000000000006102ad565b60006020828403121561027957600080fd5b81356001600160a01b038116811461029057600080fd5b9392505050565b634e487b7160e01b600052601160045260246000fd5b600080821280156001600160ff1b03849003851316156102cf576102cf610297565b600160ff1b83900384128116156102e8576102e8610297565b50500190565b60008261030b57634e487b7160e01b600052601260045260246000fd5b50079056fea26469706673582212205a83d10dd7833bd1f3694c333c7f61f57cd3c9ed8eb8cb2c73e1b1b7422164e864736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c8063673a7e28146100675780638e15f473146100825780638f2839701461008a578063e68b52e71461009f578063ef06e72c146100c5578063f851a440146100f0575b600080fd5b61006f610103565b6040519081526020015b60405180910390f35b61006f6101a8565b61009d610098366004610267565b6101b7565b005b6001546100b390600160a01b900460ff1681565b60405160ff9091168152602001610079565b6001546100d8906001600160a01b031681565b6040516001600160a01b039091168152602001610079565b6000546100d8906001600160a01b031681565b6003546000906001600160a01b031633146101575760405162461bcd60e51b815260206004820152600f60248201526e13db9b1e481b1bdb99c81cda1bdc9d608a1b60448201526064015b60405180910390fd5b60028054906101678260016102ad565b61017191906102ee565b600281905590506101a2817f00000000000000000000000000000000000000000000000000000000000000006102ad565b91505090565b60006101b261021f565b905090565b6000546001600160a01b031633146101fd5760405162461bcd60e51b81526020600482015260096024820152682737ba1030b236b4b760b91b604482015260640161014e565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b600280546000916102318260016102ad565b61023b91906102ee565b90506101a2817f00000000000000000000000000000000000000000000000000000000000000006102ad565b60006020828403121561027957600080fd5b81356001600160a01b038116811461029057600080fd5b9392505050565b634e487b7160e01b600052601160045260246000fd5b600080821280156001600160ff1b03849003851316156102cf576102cf610297565b600160ff1b83900384128116156102e8576102e8610297565b50500190565b60008261030b57634e487b7160e01b600052601260045260246000fd5b50079056fea26469706673582212205a83d10dd7833bd1f3694c333c7f61f57cd3c9ed8eb8cb2c73e1b1b7422164e864736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "changeAdmin(address)": {
+        "notice": "MULTISIG ADMIN FUNCTIONS ///////"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 25359,
+        "contract": "contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol:DeprecatedOracleManagerChainlink",
+        "label": "admin",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 25362,
+        "contract": "contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol:DeprecatedOracleManagerChainlink",
+        "label": "chainlinkOracle",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(AggregatorV3Interface)45"
+      },
+      {
+        "astId": 25364,
+        "contract": "contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol:DeprecatedOracleManagerChainlink",
+        "label": "oracleDecimals",
+        "offset": 20,
+        "slot": "1",
+        "type": "t_uint8"
+      },
+      {
+        "astId": 12617,
+        "contract": "contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol:DeprecatedOracleManagerChainlink",
+        "label": "forcedPriceAdjustment",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_int256"
+      },
+      {
+        "astId": 12621,
+        "contract": "contracts/DeprecatedMarkets/DeprecatedOracleManagerChainlink.sol:DeprecatedOracleManagerChainlink",
+        "label": "longShort",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(AggregatorV3Interface)45": {
+        "encoding": "inplace",
+        "label": "contract AggregatorV3Interface",
+        "numberOfBytes": "20"
+      },
+      "t_int256": {
+        "encoding": "inplace",
+        "label": "int256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}

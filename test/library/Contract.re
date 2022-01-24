@@ -28,23 +28,6 @@ module DataFetchers = {
 };
 
 module LongShortHelpers = {
-  type marketBalance = {
-    longValue: Ethers.BigNumber.t,
-    shortValue: Ethers.BigNumber.t,
-  };
-  let getMarketBalance = (longShort, ~marketIndex) => {
-    let%AwaitThen longValue =
-      longShort->LongShort.marketSideValueInPaymentToken(
-        marketIndex,
-        true /*long*/,
-      );
-    let%Await shortValue =
-      longShort->LongShort.marketSideValueInPaymentToken(
-        marketIndex,
-        false /*short*/,
-      );
-    {longValue, shortValue};
-  };
   let getSyntheticTokenPrice = (longShort, ~marketIndex, ~isLong) => {
     let%AwaitThen syntheticTokenAddress =
       longShort->LongShort.syntheticTokens(marketIndex, isLong);
@@ -56,8 +39,12 @@ module LongShortHelpers = {
     let%AwaitThen totalSupply =
       synthContract->Obj.magic->SyntheticToken.totalSupply;
 
-    let%Await marketSideValueInPaymentToken =
-      longShort->LongShort.marketSideValueInPaymentToken(marketIndex, isLong);
+    let%Await marketValuesInPaymentToken =
+      longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+    let marketSideValueInPaymentToken =
+      isLong
+        ? marketValuesInPaymentToken.value_long
+        : marketValuesInPaymentToken.value_short;
 
     let syntheticTokenPrice =
       marketSideValueInPaymentToken
@@ -90,11 +77,11 @@ module SyntheticTokenHelpers = {
   };
 };
 
-module YieldManagerAaveHelpers = {
+module YieldManagerAaveBasicHelpers = {
   type contractsType = {
     .
     "aToken": ERC20MockSmocked.t,
-    "yieldManagerAave": YieldManagerAave.t,
+    "yieldManagerAave": YieldManagerAaveBasic.t,
     "paymentToken": ERC20MockSmocked.t,
     "treasury": Ethers.Wallet.t,
     "aaveIncentivesController": AaveIncentivesControllerMockSmocked.t,

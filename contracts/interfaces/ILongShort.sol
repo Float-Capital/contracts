@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 interface ILongShort {
   /*╔════════════════════════════╗
     ║           EVENTS           ║
     ╚════════════════════════════╝*/
 
+  event Upgrade(uint256 version);
   event LongShortV1(address admin, address tokenFactory, address staker);
 
   event SystemStateUpdated(
@@ -77,6 +78,8 @@ interface ILongShort {
 
   function oracleManagers(uint32) external view returns (address);
 
+  function latestMarket() external view returns (uint32);
+
   function marketUpdateIndex(uint32) external view returns (uint256);
 
   function batched_amountPaymentToken_deposit(uint32, bool) external view returns (uint256);
@@ -88,16 +91,21 @@ interface ILongShort {
     view
     returns (uint256);
 
-  function syntheticToken_priceSnapshot(
+  function get_syntheticToken_priceSnapshot(uint32, uint256)
+    external
+    view
+    returns (uint256, uint256);
+
+  function get_syntheticToken_priceSnapshot_side(
     uint32,
     bool,
     uint256
   ) external view returns (uint256);
 
-  function marketSideValueInPaymentToken(uint32 marketIndex, bool isLong)
+  function marketSideValueInPaymentToken(uint32 marketIndex)
     external
     view
-    returns (uint256 marketSideValueInPaymentToken);
+    returns (uint128 marketSideValueInPaymentTokenLong, uint128 marketSideValueInPaymentTokenShort);
 
   function updateSystemState(uint32 marketIndex) external;
 

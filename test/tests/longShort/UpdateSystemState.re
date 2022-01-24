@@ -159,21 +159,12 @@ let testUnit =
           contracts.contents.longShort
           ->LongShort.marketUpdateIndex(marketIndex);
 
-        let%AwaitThen newLongPrice =
+        let%AwaitThen newPriceSnapshot =
           contracts.contents.longShort
-          ->LongShort.syntheticToken_priceSnapshot(
-              marketIndex,
-              true,
-              updateIndex,
-            );
+          ->LongShort.syntheticToken_priceSnapshot(marketIndex, updateIndex);
 
-        let%AwaitThen newShortPrice =
-          contracts.contents.longShort
-          ->LongShort.syntheticToken_priceSnapshot(
-              marketIndex,
-              false,
-              updateIndex,
-            );
+        let newLongPrice = newPriceSnapshot.price_long;
+        let newShortPrice = newPriceSnapshot.price_short;
 
         let%Await assetPrice =
           contracts.contents.longShort->LongShort.assetPrice(marketIndex);
@@ -240,7 +231,7 @@ let testUnit =
                 marketUpdateIndex: latestUpdateIndexForMarket->add(oneBn),
                 longPrice: potentialNewLongPrice.contents,
                 shortPrice: potentialNewShortPrice.contents,
-                longValue:  oldLongValueAfterYield->add(valueChangeLong),
+                longValue: oldLongValueAfterYield->add(valueChangeLong),
                 shortValue: oldShortValueAfterYield->add(valueChangeShort),
               });
           },
@@ -287,21 +278,15 @@ let testUnit =
           let%Await _ =
             setupWithPriceChange(~stakerNextPrice_currentUpdateIndex=zeroBn);
           let newUpdateIndex = latestUpdateIndexForMarket->add(oneBn);
-          let%AwaitThen newLongPrice =
+          let%Await newPriceSnapshot =
             contracts.contents.longShort
             ->LongShort.syntheticToken_priceSnapshot(
                 marketIndex,
-                true,
                 newUpdateIndex,
               );
 
-          let%Await newShortPrice =
-            contracts.contents.longShort
-            ->LongShort.syntheticToken_priceSnapshot(
-                marketIndex,
-                false,
-                newUpdateIndex,
-              );
+          let newLongPrice = newPriceSnapshot.price_long;
+          let newShortPrice = newPriceSnapshot.price_short;
 
           newLongPrice->Chai.bnEqual(potentialNewLongPrice.contents);
           newShortPrice->Chai.bnEqual(potentialNewShortPrice.contents);
@@ -312,13 +297,11 @@ let testUnit =
           () => {
           let%AwaitThen _ =
             setupWithPriceChange(~stakerNextPrice_currentUpdateIndex=zeroBn);
-          let%AwaitThen newLongValue =
+          let%Await newMarketValues =
             contracts.contents.longShort
-            ->LongShort.marketSideValueInPaymentToken(marketIndex, true);
-
-          let%Await newShortValue =
-            contracts.contents.longShort
-            ->LongShort.marketSideValueInPaymentToken(marketIndex, false);
+            ->LongShort.marketSideValueInPaymentToken(marketIndex);
+          let newLongValue = newMarketValues.value_long;
+          let newShortValue = newMarketValues.value_short;
 
           newLongValue->Chai.bnEqual(
             oldLongValueAfterYield->add(valueChangeLong),
@@ -456,11 +439,12 @@ let testIntegration =
           // 32.1... DAI - any random amount would do...
           let amountOfYieldToAward = bnFromString("3216543216543216542");
 
-          let%Await amountToMintToGuaranteeImbalance =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              !longIsOverBalanced,
-            );
+          let%Await marketValues =
+            longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+          let amountToMintToGuaranteeImbalance =
+            longIsOverBalanced
+              ? marketValues.value_short : marketValues.value_long;
+
           // Make sure the correct side is over-balanced!
           let%AwaitThen _ =
             HelperActions.mintDirect(
@@ -474,16 +458,10 @@ let testIntegration =
             );
 
           // get total balance pools etc before (and amount for treasury)
-          let%Await longTokenPoolValueBefore =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              true,
-            );
-          let%Await shortTokenPoolValueBefore =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              false,
-            );
+          let%Await tokenPoolValueBefore =
+            longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+          let longTokenPoolValueBefore = tokenPoolValueBefore.value_long;
+          let shortTokenPoolValueBefore = tokenPoolValueBefore.value_short;
 
           let%Await totalDueForTreasuryBefore =
             yieldManager->YieldManagerMock.totalReservedForTreasury;
@@ -510,16 +488,11 @@ let testIntegration =
           let%Await _ = longShort->LongShort.updateSystemState(~marketIndex);
 
           // get total balance pools after and amount for treasury
-          let%Await longTokenPoolValueAfter =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              true,
-            );
-          let%Await shortTokenPoolValueAfter =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              false,
-            );
+          let%Await tokenPoolValueAfter =
+            longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+          let longTokenPoolValueAfter = tokenPoolValueAfter.value_long;
+          let shortTokenPoolValueAfter = tokenPoolValueAfter.value_short;
+
           let%Await totalDueForTreasuryAfter =
             yieldManager->YieldManagerMock.totalReservedForTreasury;
           let totalValueRelatedToMarketAfter =

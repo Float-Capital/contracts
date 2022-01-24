@@ -35,12 +35,6 @@ let testIntegration =
             isLong
               ? LongShort.redeemLongNextPrice : LongShort.redeemShortNextPrice;
 
-          let%AwaitThen _longValueBefore =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              isLong,
-            );
-
           let%AwaitThen _ =
             paymentToken->ERC20Mock.mint(
               ~_to=testUser.address,
@@ -104,12 +98,15 @@ let testIntegration =
             longShort->LongShort.updateSystemState(~marketIndex);
           let%AwaitThen latestUpdateIndex =
             longShort->LongShort.marketUpdateIndex(marketIndex);
-          let%AwaitThen redemptionPriceWithFees =
+          let%AwaitThen priceSnapshotAtRedemptionPrice =
             longShort->LongShort.syntheticToken_priceSnapshot(
               marketIndex,
-              isLong,
               latestUpdateIndex,
             );
+          let redemptionPriceWithFees =
+            isLong
+              ? priceSnapshotAtRedemptionPrice.price_long
+              : priceSnapshotAtRedemptionPrice.price_short;
 
           let amountExpectedToBeRedeemed =
             usersBalanceAvailableForRedeem

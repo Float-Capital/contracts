@@ -19,8 +19,7 @@ const {
   TREASURY_ALPHA,
   GEMS,
 } = require("../helper-hardhat-config");
-
-const avalancheDaiAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
+const { avalancheDaiAddress } = require("./config");
 
 let networkToUse = network.name;
 

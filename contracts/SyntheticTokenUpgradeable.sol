@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "./interfaces/IStaker.sol";
 import "./interfaces/ILongShort.sol";
@@ -85,7 +85,7 @@ contract SyntheticTokenUpgradeable is
   /// @notice Allows users to stake their synthetic tokens to earn Float.
   /// @dev Core staking logic contained in Staker.sol
   /// @param amount Amount to stake in wei.
-  function stake(uint256 amount) external override {
+  function stake(uint256 amount) external virtual override {
     // NOTE: this is safe, this function will throw "ERC20: transfer
     //       amount exceeds balance" if amount exceeds users balance.
     super._transfer(msg.sender, address(staker), amount);
@@ -168,7 +168,7 @@ contract SyntheticTokenUpgradeable is
     address sender,
     address to,
     uint256 amount
-  ) internal override {
+  ) internal virtual override {
     if (sender != longShort) {
       ILongShort(longShort).executeOutstandingNextPriceSettlementsUser(sender, marketIndex);
     }
@@ -190,4 +190,7 @@ contract SyntheticTokenUpgradeable is
         isLong
       );
   }
+
+  /// Upgradability - implementation constructor:
+  constructor() initializer {}
 }

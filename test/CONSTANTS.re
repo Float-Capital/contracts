@@ -3,6 +3,7 @@ let floatIssuanceFixedDecimal =
     "300000000000000000000000000000000000000000000",
   );
 let tenToThe18 = Ethers.BigNumber.fromUnsafe("1000000000000000000");
+let twoTimesTenToThe18 = Ethers.BigNumber.fromUnsafe("2000000000000000000");
 let zeroBn = Ethers.BigNumber.fromInt(0);
 let oneBn = Ethers.BigNumber.fromInt(1);
 let twoBn = Ethers.BigNumber.fromInt(2);
@@ -11,3 +12,5 @@ let shortTokenType = 1;
 
 let zeroAddressStr = "0x0000000000000000000000000000000000000000";
 let zeroAddress = Ethers.Utils.getAddressUnsafe(zeroAddressStr);
+
+let eightyBitShift = Ethers.BigNumber.fromUnsafe("1208925819614629174706176");

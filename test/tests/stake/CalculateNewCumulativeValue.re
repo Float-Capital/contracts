@@ -10,15 +10,16 @@ let test =
     ) => {
   let marketIndex = Helpers.randomJsInteger();
 
-  let (
-    longFloatPerSecond,
-    shortFloatPerSecond,
-    latestRewardIndexForMarket,
-    accumFloatLong,
-    accumFloatShort,
-    timeDelta,
-  ) =
-    Helpers.Tuple.make6(Helpers.randomInteger);
+  let (longFloatPerSecond, shortFloatPerSecond, latestRewardIndexForMarket) =
+    Helpers.Tuple.make3(Helpers.randomInteger);
+  let timestampRef = ref(CONSTANTS.zeroBn);
+
+  // NOTE: these numbers have to be bigger than 2^80 otherwise they become insignificant after the bitshift.
+  let accumFloatLong =
+    Helpers.randomBigIntInRange(1, 1000)->mul(CONSTANTS.eightyBitShift);
+  let accumFloatShort =
+    Helpers.randomBigIntInRange(1, 1000)->mul(CONSTANTS.eightyBitShift);
+
   let (longValue, shortValue, longPrice, shortPrice) =
     Helpers.Tuple.make4(Helpers.randomInteger);
 
@@ -33,6 +34,9 @@ let test =
     before_once'(() => {
       let {staker} = contracts.contents;
 
+      let%AwaitThen timestamp = Helpers.getRandomTimestampInPast();
+      timestampRef := timestamp;
+
       let%AwaitThen _ =
         staker->StakerSmocked.InternalMock.setupFunctionForUnitTesting(
           ~functionName="calculateNewCumulativeValue",
@@ -43,16 +47,13 @@ let test =
         shortFloatPerSecond,
       );
 
-      StakerSmocked.InternalMock.mock_calculateTimeDeltaFromLastAccumulativeIssuancePerStakedSynthSnapshotToReturn(
-        timeDelta,
-      );
-
       let%Await _ =
         staker->Staker.Exposed.setCalculateNewCumulativeRateParams(
           ~marketIndex,
           ~latestRewardIndexForMarket,
           ~accumFloatLong,
           ~accumFloatShort,
+          ~timestamp=timestamp->Ethers.BigNumber.toNumber,
         );
 
       promiseRef :=
@@ -64,17 +65,22 @@ let test =
           ~longValue,
           ~shortValue,
         );
-      let%Await _ = promiseRef^;
-      ();
+      promiseRef^;
     });
 
     it(
       "returns the old cumulative float + (timeDelta * floatPerSecond) for each market side",
       () => {
+        let%AwaitThen {timestamp: timestampLatest} = Helpers.getBlock();
+
+        let timeDelta =
+          Ethers.BigNumber.fromInt(timestampLatest)
+          ->Ethers.BigNumber.sub(timestampRef^);
+
         let mockFn = (~oldCumulative, ~timeDelta, ~fps) =>
-          oldCumulative->Ethers.BigNumber.add(
-            timeDelta->Ethers.BigNumber.mul(fps),
-          );
+          oldCumulative
+          ->Ethers.BigNumber.mul(CONSTANTS.eightyBitShift)
+          ->Ethers.BigNumber.add(timeDelta->Ethers.BigNumber.mul(fps));
         let%Await result = promiseRef^;
         let longCumulative: Ethers.BigNumber.t =
           result->Obj.magic->Array.getUnsafe(0);
@@ -106,13 +112,6 @@ let test =
         shortPrice,
         longValue,
         shortValue,
-      })
-    });
-
-    it("calls calculateTimeDelta with correct arguments", () => {
-      StakerSmocked.InternalMock._calculateTimeDeltaFromLastAccumulativeIssuancePerStakedSynthSnapshotCallCheck({
-        marketIndex,
-        previousMarketUpdateIndex: latestRewardIndexForMarket,
       })
     });
   });

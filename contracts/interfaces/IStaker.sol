@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 interface IStaker {
   /*╔════════════════════════════╗
     ║           EVENTS           ║
     ╚════════════════════════════╝*/
+
+  event Upgrade(uint256 version);
 
   event StakerV1(
     address admin,
@@ -99,17 +101,10 @@ interface IStaker {
   function latestRewardIndex(uint32 marketIndex) external view returns (uint256);
 
   // TODO: couldn't get this to work!
-  function accumulativeFloatPerSyntheticTokenSnapshots(
-    uint32 marketIndex,
-    uint256 latestUpdateIndex
-  )
+  function safe_getUpdateTimestamp(uint32 marketIndex, uint256 latestUpdateIndex)
     external
     view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    );
+    returns (uint256);
 
   function mintAndStakeNextPrice(
     uint32 marketIndex,

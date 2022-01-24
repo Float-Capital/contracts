@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
-import "../Staker.sol";
+import "../staker/template/Staker.sol";
 
 /*
 NOTE: This contract is for testing purposes only!
@@ -20,10 +20,10 @@ contract StakerInternalStateSetters is Staker {
     uint256 newLatestRewardIndex,
     address user,
     uint256 usersLatestClaimedReward,
-    uint256 accumulativeFloatPerTokenLatestLong,
-    uint256 accumulativeFloatPerTokenLatestShort,
-    uint256 accumulativeFloatPerTokenUserLong,
-    uint256 accumulativeFloatPerTokenUserShort,
+    uint112 accumulativeFloatPerTokenLatestLong,
+    uint112 accumulativeFloatPerTokenLatestShort,
+    uint112 accumulativeFloatPerTokenUserLong,
+    uint112 accumulativeFloatPerTokenUserShort,
     uint256 newUserAmountStakedLong,
     uint256 newUserAmountStakedShort
   ) public {
@@ -52,10 +52,10 @@ contract StakerInternalStateSetters is Staker {
     uint32 marketIndex,
     uint256 rewardIndexTo,
     uint256 rewardIndexFrom,
-    uint256 syntheticRewardToLongToken,
-    uint256 syntheticRewardFromLongToken,
-    uint256 syntheticRewardToShortToken,
-    uint256 syntheticRewardFromShortToken
+    uint112 syntheticRewardToLongToken,
+    uint112 syntheticRewardFromLongToken,
+    uint112 syntheticRewardToShortToken,
+    uint112 syntheticRewardFromShortToken
   ) public {
     accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][rewardIndexTo]
       .accumulativeFloatPerSyntheticToken_long = syntheticRewardToLongToken;
@@ -130,7 +130,7 @@ contract StakerInternalStateSetters is Staker {
     marketLaunchIncentive_multipliers[marketIndex] = multiplier;
   }
 
-  function setGetKValueParams(uint32 marketIndex, uint256 timestamp) external {
+  function setGetKValueParams(uint32 marketIndex, uint32 timestamp) external {
     accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][0].timestamp = timestamp;
   }
 
@@ -151,20 +151,12 @@ contract StakerInternalStateSetters is Staker {
     marketIndexOfToken[token] = marketIndexForToken;
   }
 
-  function setCalculateTimeDeltaParams(
-    uint32 marketIndex,
-    uint256 latestRewardIndexForMarket,
-    uint256 timestamp
-  ) external {
-    accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][latestRewardIndexForMarket]
-      .timestamp = timestamp;
-  }
-
   function setCalculateNewCumulativeRateParams(
     uint32 marketIndex,
     uint256 latestRewardIndexForMarket,
-    uint256 accumFloatLong,
-    uint256 accumFloatShort
+    uint112 accumFloatLong,
+    uint112 accumFloatShort,
+    uint32 timestamp
   ) external {
     latestRewardIndex[marketIndex] = latestRewardIndexForMarket;
     accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][latestRewardIndex[marketIndex]]
@@ -172,6 +164,9 @@ contract StakerInternalStateSetters is Staker {
 
     accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][latestRewardIndex[marketIndex]]
       .accumulativeFloatPerSyntheticToken_short = accumFloatShort;
+
+    accumulativeFloatPerSyntheticTokenSnapshots[marketIndex][latestRewardIndexForMarket]
+      .timestamp = timestamp;
   }
 
   function setSetRewardObjectsParams(uint32 marketIndex, uint256 latestRewardIndexForMarket)

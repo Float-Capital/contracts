@@ -102,10 +102,10 @@ let stakeRandomlyInMarkets =
           );
 
         let%AwaitThen {
-          longValue: valueLongBefore,
-          shortValue: valueShortBefore,
+          value_long: valueLongBefore,
+          value_short: valueShortBefore,
         } =
-          longShort->LongShortHelpers.getMarketBalance(~marketIndex);
+          longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
 
         let%Await newSynthsUserHasStakedIn =
           switch (Helpers.randomMintLongShort()) {
@@ -163,11 +163,13 @@ let stakeRandomlyInMarkets =
                   valueInOtherSide: valueShortBefore,
                 },
               |]);
+
             let%AwaitThen {
-              longValue: valueLongBefore,
-              shortValue: valueShortBefore,
+              value_long: valueLongBefore,
+              value_short: valueShortBefore,
             } =
-              longShort->LongShortHelpers.getMarketBalance(~marketIndex);
+              longShort->LongShort.marketSideValueInPaymentToken(marketIndex);
+
             let%AwaitThen _ =
               mintStake(~syntheticToken=shortSynth, ~amount=shortAmount);
             let%Await shortTokenPrice =

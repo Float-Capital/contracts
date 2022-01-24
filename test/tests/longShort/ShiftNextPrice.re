@@ -36,12 +36,6 @@ let testIntegration =
               ? LongShort.shiftPositionFromLongNextPrice
               : LongShort.shiftPositionFromShortNextPrice;
 
-          let%AwaitThen _longValueBefore =
-            longShort->LongShort.marketSideValueInPaymentToken(
-              marketIndex,
-              isShiftFromLong,
-            );
-
           let%AwaitThen _ =
             paymentToken->ERC20Mock.mint(
               ~_to=testUser.address,
@@ -105,18 +99,18 @@ let testIntegration =
             longShort->LongShort.updateSystemState(~marketIndex);
           let%AwaitThen latestUpdateIndex =
             longShort->LongShort.marketUpdateIndex(marketIndex);
-          let%AwaitThen shiftPriceFromSynth =
+          let%AwaitThen shiftPriceSnapshot =
             longShort->LongShort.syntheticToken_priceSnapshot(
               marketIndex,
-              isShiftFromLong,
               latestUpdateIndex,
             );
-          let%AwaitThen shiftPriceToSynth =
-            longShort->LongShort.syntheticToken_priceSnapshot(
-              marketIndex,
-              !isShiftFromLong,
-              latestUpdateIndex,
-            );
+
+          let (shiftPriceFromSynth, shiftPriceToSynth) =
+            if (isShiftFromLong) {
+              (shiftPriceSnapshot.price_long, shiftPriceSnapshot.price_short);
+            } else {
+              (shiftPriceSnapshot.price_short, shiftPriceSnapshot.price_long);
+            };
 
           let amountSyntheticTokenExpectedToRecieveOnOtherSide =
             usersBalanceAvailableForShift

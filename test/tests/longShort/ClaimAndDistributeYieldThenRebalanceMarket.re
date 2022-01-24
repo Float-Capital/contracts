@@ -15,7 +15,11 @@ let testUnit =
 
     let marketAmountFromYieldManager = Helpers.randomTokenAmount();
 
-    let useFundingRateFlag = Js.Math.random_int(0, 2)->bnFromInt;
+    let fundingRateMultiplier_e18 =
+      Helpers.randomBigIntInRange(5, 5000)
+      ->Ethers.BigNumber.mul(
+          Ethers.BigNumber.fromUnsafe("10000000000000000"),
+        );
 
     before_once'(() => {
       contracts.contents.longShort
@@ -79,7 +83,7 @@ let testUnit =
           ? yieldDistributedValueLong : yieldDistributedValueShort;
 
       let fundingAmount =
-        useFundingRateFlag->bnGt(zeroBn)
+        fundingRateMultiplier_e18->bnGt(zeroBn)
           ? overBalancedSide->div(Js.Math.random_int(2, 10000)->bnFromInt)
           : zeroBn;
 
@@ -109,7 +113,7 @@ let testUnit =
           contracts.contents.longShort
           ->LongShortStateSetters.setFundingRateMultiplier(
               ~marketIndex,
-              ~fundingRate=useFundingRateFlag,
+              ~fundingRate=fundingRateMultiplier_e18,
             );
 
         LongShortSmocked.InternalMock.mock_calculateFundingAmountToReturn(
@@ -122,7 +126,7 @@ let testUnit =
         );
 
         contracts.contents.yieldManagerSmocked
-        ->YieldManagerAaveSmocked.mockDistributeYieldForTreasuryAndReturnMarketAllocationToReturn(
+        ->YieldManagerAaveBasicSmocked.mockDistributeYieldForTreasuryAndReturnMarketAllocationToReturn(
             marketAmountFromYieldManager,
           );
       });
@@ -150,7 +154,7 @@ let testUnit =
           "gets the treasuryYieldPercent from _getYieldSplit and calls distributeYieldForTreasuryAndReturnMarketAllocation on the yieldManager with correct amount",
           () => {
           contracts.contents.yieldManagerSmocked
-          ->YieldManagerAaveSmocked.distributeYieldForTreasuryAndReturnMarketAllocationCallCheck({
+          ->YieldManagerAaveBasicSmocked.distributeYieldForTreasuryAndReturnMarketAllocationCallCheck({
               totalValueRealizedForMarket: totalValueLockedInMarket,
               treasuryYieldPercent_e18,
             })
@@ -267,7 +271,6 @@ let testUnit =
         },
       );
     };
-    ();
 
     describe("Long Side is Overvalued", () => {
       let marketSideValueInPaymentTokenShort = Helpers.randomTokenAmount();

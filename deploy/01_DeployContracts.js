@@ -14,7 +14,7 @@ const {
 } = require("../helper-hardhat-config");
 const mumbaiDaiAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
 const polygonDaiAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-const avalancheUsdcAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
+const avalancheDaiAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
 
 let networkToUse = network.name;
 
@@ -35,7 +35,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   if (networkToUse === "polygon") {
     paymentTokenAddress = polygonDaiAddress;
   } else if (networkToUse === "avalanche") {
-    paymentTokenAddress = avalancheUsdcAddress;
+    paymentTokenAddress = avalancheDaiAddress;
   } else if (networkToUse === "mumbai") {
     paymentTokenAddress = mumbaiDaiAddress;
   } else {

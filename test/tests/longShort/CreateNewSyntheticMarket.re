@@ -95,7 +95,7 @@ let testUnit =
 
     it("calls initializeForMarket on yield manager", () => {
       contracts.contents.yieldManagerSmocked
-      ->YieldManagerAaveSmocked.initializeForMarketCallCheck
+      ->YieldManagerAaveBasicSmocked.initializeForMarketCallCheck
     });
 
     it("calls updatePrice price on the oracle", () => {

@@ -22,7 +22,7 @@ extendConfig(function (config, userConfig) {
           },
           {
             contractName: "Staker",
-            fullPath: "contracts/Staker.sol"
+            fullPath: "contracts/staker/template/Staker.sol"
           }
         ],
       }

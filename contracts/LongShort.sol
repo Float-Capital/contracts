@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/ISyntheticToken.sol";
@@ -14,7 +15,8 @@ import "./interfaces/IYieldManager.sol";
 import "./interfaces/IOracleManager.sol";
 import "./abstract/AccessControlledAndUpgradeable.sol";
 import "./GEMS.sol";
-import "hardhat/console.sol";
+
+// import "hardhat/console.sol";
 
 /**
  **** visit https://float.capital *****
@@ -34,6 +36,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     ║          VARIABLES          ║
     ╚═════════════════════════════╝*/
 
+  /* ══════ CONFIG ══════ */
+  // NOTE: since these are constants, their use in `if` statements is optimized away by the compiler.
+  bool public constant HAS_LEGACY_DATA = true;
+
   /* ══════ Fixed-precision constants ══════ */
   /// @notice this is the address that permanently locked initial liquidity for markets is held by.
   /// These tokens will never move so market can never have zero liquidity on a side.
@@ -48,7 +54,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   uint256[45] private __constantsGap;
 
   /* ══════ Global state ══════ */
-  uint32 public latestMarket;
+  uint32 public override latestMarket;
 
   address public staker;
   address public tokenFactory;
@@ -67,23 +73,42 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   mapping(uint32 => address) public paymentTokens;
   mapping(uint32 => address) public yieldManagers;
   mapping(uint32 => address) public override oracleManagers;
-  uint256[45] private __marketStateGap;
+
+  mapping(uint32 => uint256) public fundingRateMultiplier_e18;
+
+  uint256[44] private __marketStateGap;
 
   /* ══════ Market + position (long/short) specific ══════ */
   mapping(uint32 => mapping(bool => address)) public override syntheticTokens;
-  mapping(uint32 => mapping(bool => uint256)) public override marketSideValueInPaymentToken;
+
+  mapping(uint32 => mapping(bool => uint256)) public marketSideValueInPaymentTokenLEGACY;
 
   /// @notice synthetic token prices of a given market of a (long/short) at every previous price update
   mapping(uint32 => mapping(bool => mapping(uint256 => uint256)))
-    public
-    override syntheticToken_priceSnapshot;
+    public syntheticToken_priceSnapshotLEGACY;
 
   mapping(uint32 => mapping(bool => uint256)) public override batched_amountPaymentToken_deposit;
   mapping(uint32 => mapping(bool => uint256)) public override batched_amountSyntheticToken_redeem;
   mapping(uint32 => mapping(bool => uint256))
     public
     override batched_amountSyntheticToken_toShiftAwayFrom_marketSide;
-  uint256[45] private __marketPositonStateGap;
+
+  struct MarketSideValueInPaymentToken {
+    // this has a maximum size of `2^128=3.4028237e+38` units of payment token which is amply sufficient for our markets
+    uint128 value_long;
+    uint128 value_short;
+  }
+  mapping(uint32 => MarketSideValueInPaymentToken) public override marketSideValueInPaymentToken;
+
+  struct SynthPriceInPaymentToken {
+    // this has a maximum size of `2^128=3.4028237e+38` units of payment token which is amply sufficient for our markets
+    uint128 price_long;
+    uint128 price_short;
+  }
+  mapping(uint32 => mapping(uint256 => SynthPriceInPaymentToken))
+    public syntheticToken_priceSnapshot;
+
+  uint256[43] private __marketPositonStateGap;
 
   /* ══════ User specific ══════ */
   mapping(uint32 => mapping(address => uint256)) public userNextPrice_currentUpdateIndex;
@@ -94,8 +119,6 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     public userNextPrice_syntheticToken_redeemAmount;
   mapping(uint32 => mapping(bool => mapping(address => uint256)))
     public userNextPrice_syntheticToken_toShiftAwayFrom_marketSide;
-
-  mapping(uint32 => uint256) public fundingRateMultiplier_e18;
 
   /*╔═════════════════════════════╗
     ║          MODIFIERS          ║
@@ -154,13 +177,14 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     address _tokenFactory,
     address _staker,
     address _gems
-  ) public virtual initializer {
+  ) public virtual {
     require(
       _admin != address(0) &&
         _tokenFactory != address(0) &&
         _staker != address(0) &&
         _gems != address(0)
     );
+    // The below function ensures that this contract can't be re-initialized!
     _AccessControlledAndUpgradeable_init(_admin);
     tokenFactory = _tokenFactory;
     staker = _staker;
@@ -197,6 +221,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     external
     adminOnly
   {
+    require(_fundingRateMultiplier_e18 <= 5e19, "not in range: funding rate <= 5000%");
     fundingRateMultiplier_e18[marketIndex] = _fundingRateMultiplier_e18;
     emit MarketFundingRateMultiplerChanged(marketIndex, _fundingRateMultiplier_e18);
   }
@@ -347,8 +372,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       initialMarketSeedForEachMarketSide
     );
 
-    marketSideValueInPaymentToken[marketIndex][true] = initialMarketSeedForEachMarketSide;
-    marketSideValueInPaymentToken[marketIndex][false] = initialMarketSeedForEachMarketSide;
+    marketSideValueInPaymentToken[marketIndex] = MarketSideValueInPaymentToken(
+      SafeCast.toUint128(initialMarketSeedForEachMarketSide),
+      SafeCast.toUint128(initialMarketSeedForEachMarketSide)
+    );
   }
 
   /// @notice Sets a market as active once it has already been setup by createNewSyntheticMarket.
@@ -495,6 +522,45 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       syntheticTokenPrice_targetSide;
   }
 
+  function get_syntheticToken_priceSnapshot(uint32 marketIndex, uint256 priceSnapshotIndex)
+    public
+    view
+    override
+    returns (uint256 priceLong, uint256 priceShort)
+  {
+    priceLong = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_long);
+
+    priceShort = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_short);
+
+    if (HAS_LEGACY_DATA) {
+      // In case price requested is part of legacy data-structure
+      if (
+        priceLong == 0 /* which means priceShort is also zero! */
+      ) {
+        priceLong = syntheticToken_priceSnapshotLEGACY[marketIndex][true][priceSnapshotIndex];
+        priceShort = syntheticToken_priceSnapshotLEGACY[marketIndex][false][priceSnapshotIndex];
+      }
+    }
+  }
+
+  function get_syntheticToken_priceSnapshot_side(
+    uint32 marketIndex,
+    bool isLong,
+    uint256 priceSnapshotIndex
+  ) public view override returns (uint256 price) {
+    if (isLong) {
+      price = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_long);
+    } else {
+      price = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_short);
+    }
+    if (HAS_LEGACY_DATA) {
+      // In case price requested is part of legacy data-structure
+      if (price == 0) {
+        price = syntheticToken_priceSnapshotLEGACY[marketIndex][isLong][priceSnapshotIndex];
+      }
+    }
+  }
+
   /// @notice Given an executed next price shift from tokens on one market side to the other,
   /// determines how many other side tokens the shift was worth.
   /// @dev Intended for use primarily by Staker.sol
@@ -509,12 +575,19 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     bool isShiftFromLong,
     uint256 priceSnapshotIndex
   ) public view virtual override returns (uint256 amountSyntheticTokensToMintOnTargetSide) {
-    uint256 syntheticTokenPriceOnOriginSide = syntheticToken_priceSnapshot[marketIndex][
-      isShiftFromLong
-    ][priceSnapshotIndex];
-    uint256 syntheticTokenPriceOnTargetSide = syntheticToken_priceSnapshot[marketIndex][
-      !isShiftFromLong
-    ][priceSnapshotIndex];
+    uint256 syntheticTokenPriceOnOriginSide;
+    uint256 syntheticTokenPriceOnTargetSide;
+    if (isShiftFromLong) {
+      (
+        syntheticTokenPriceOnOriginSide,
+        syntheticTokenPriceOnTargetSide
+      ) = get_syntheticToken_priceSnapshot(marketIndex, priceSnapshotIndex);
+    } else {
+      (
+        syntheticTokenPriceOnTargetSide,
+        syntheticTokenPriceOnOriginSide
+      ) = get_syntheticToken_priceSnapshot(marketIndex, priceSnapshotIndex);
+    }
 
     amountSyntheticTokensToMintOnTargetSide = _getEquivalentAmountSyntheticTokensOnTargetSide(
       amountSyntheticToken_redeemOnOriginSide,
@@ -563,11 +636,28 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         isLong
       ][user];
 
-      if (amountPaymentTokenDeposited > 0) {
-        uint256 syntheticTokenPrice = syntheticToken_priceSnapshot[marketIndex][isLong][
-          userNextPrice_currentUpdateIndex_forMarket
-        ];
+      uint256 syntheticTokenPrice;
+      uint256 syntheticTokenPriceOnOriginSideOfShift;
 
+      if (isLong) {
+        (
+          syntheticTokenPrice,
+          syntheticTokenPriceOnOriginSideOfShift
+        ) = get_syntheticToken_priceSnapshot(
+          marketIndex,
+          userNextPrice_currentUpdateIndex_forMarket
+        );
+      } else {
+        (
+          syntheticTokenPriceOnOriginSideOfShift,
+          syntheticTokenPrice
+        ) = get_syntheticToken_priceSnapshot(
+          marketIndex,
+          userNextPrice_currentUpdateIndex_forMarket
+        );
+      }
+
+      if (amountPaymentTokenDeposited > 0) {
         confirmedButNotSettledBalance = _getAmountSyntheticToken(
           amountPaymentTokenDeposited,
           syntheticTokenPrice
@@ -579,17 +669,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         ][!isLong][user];
 
       if (amountSyntheticTokensToBeShiftedAwayFromOriginSide > 0) {
-        uint256 syntheticTokenPriceOnOriginSide = syntheticToken_priceSnapshot[marketIndex][
-          !isLong
-        ][userNextPrice_currentUpdateIndex_forMarket];
-        uint256 syntheticTokenPriceOnTargetSide = syntheticToken_priceSnapshot[marketIndex][isLong][
-          userNextPrice_currentUpdateIndex_forMarket
-        ];
-
         confirmedButNotSettledBalance += _getEquivalentAmountSyntheticTokensOnTargetSide(
           amountSyntheticTokensToBeShiftedAwayFromOriginSide,
-          syntheticTokenPriceOnOriginSide,
-          syntheticTokenPriceOnTargetSide
+          syntheticTokenPriceOnOriginSideOfShift,
+          syntheticTokenPrice
         );
       }
     }
@@ -658,7 +741,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     uint256 overbalancedValue,
     uint256 underbalancedValue
   ) internal virtual returns (uint256 fundingAmount) {
-    (uint256 lastUpdateTimestamp, , ) = IStaker(staker).accumulativeFloatPerSyntheticTokenSnapshots(
+    uint256 lastUpdateTimestamp = IStaker(staker).safe_getUpdateTimestamp(
       marketIndex,
       marketUpdateIndex[marketIndex]
     );
@@ -696,9 +779,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     virtual
     returns (uint256 longValue, uint256 shortValue)
   {
+    MarketSideValueInPaymentToken
+      storage currentMarketSideValueInPaymentToken = marketSideValueInPaymentToken[marketIndex];
     // Claiming and distributing the yield
-    longValue = marketSideValueInPaymentToken[marketIndex][true];
-    shortValue = marketSideValueInPaymentToken[marketIndex][false];
+    longValue = currentMarketSideValueInPaymentToken.value_long;
+    shortValue = currentMarketSideValueInPaymentToken.value_short;
     uint256 totalValueLockedInMarket = longValue + shortValue;
 
     (bool isLongSideUnderbalanced, uint256 treasuryYieldPercent_e18) = _getYieldSplit(
@@ -824,13 +909,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       currentMarketIndex++;
       marketUpdateIndex[marketIndex] = currentMarketIndex;
 
-      syntheticToken_priceSnapshot[marketIndex][true][
-        currentMarketIndex
-      ] = syntheticTokenPrice_inPaymentTokens_long;
-
-      syntheticToken_priceSnapshot[marketIndex][false][
-        currentMarketIndex
-      ] = syntheticTokenPrice_inPaymentTokens_short;
+      syntheticToken_priceSnapshot[marketIndex][currentMarketIndex] = SynthPriceInPaymentToken(
+        SafeCast.toUint128(syntheticTokenPrice_inPaymentTokens_long),
+        SafeCast.toUint128(syntheticTokenPrice_inPaymentTokens_short)
+      );
 
       (
         int256 long_changeInMarketValue_inPaymentToken,
@@ -847,8 +929,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       newShortPoolValue = uint256(
         int256(newShortPoolValue) + short_changeInMarketValue_inPaymentToken
       );
-      marketSideValueInPaymentToken[marketIndex][true] = newLongPoolValue;
-      marketSideValueInPaymentToken[marketIndex][false] = newShortPoolValue;
+      marketSideValueInPaymentToken[marketIndex] = MarketSideValueInPaymentToken(
+        SafeCast.toUint128(newLongPoolValue),
+        SafeCast.toUint128(newShortPoolValue)
+      );
 
       IStaker(staker).pushUpdatedMarketPricesToUpdateFloatIssuanceCalculations(
         marketIndex,
@@ -944,7 +1028,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     external
     virtual
     override
-    updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(msg.sender, marketIndex)
+    updateSystemStateMarketAndExecuteOutstandingNextPriceSettlements(staker, marketIndex)
     gemCollecting
   {
     require(amount > 0, "Mint amount must be greater than 0");
@@ -1110,9 +1194,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       userNextPrice_paymentToken_depositAmount[marketIndex][isLong][user] = 0;
       uint256 amountSyntheticTokensToTransferToUser = _getAmountSyntheticToken(
         currentPaymentTokenDepositAmount,
-        syntheticToken_priceSnapshot[marketIndex][isLong][
+        get_syntheticToken_priceSnapshot_side(
+          marketIndex,
+          isLong,
           userNextPrice_currentUpdateIndex[marketIndex][user]
-        ]
+        )
       );
       ISyntheticToken(syntheticTokens[marketIndex][isLong]).transfer(
         user,
@@ -1137,9 +1223,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       userNextPrice_syntheticToken_redeemAmount[marketIndex][isLong][user] = 0;
       uint256 amountPaymentToken_toRedeem = _getAmountPaymentToken(
         currentSyntheticTokenRedemptions,
-        syntheticToken_priceSnapshot[marketIndex][isLong][
+        get_syntheticToken_priceSnapshot_side(
+          marketIndex,
+          isLong,
           userNextPrice_currentUpdateIndex[marketIndex][user]
-        ]
+        )
       );
 
       IYieldManager(yieldManagers[marketIndex]).transferPaymentTokensToUser(
@@ -1193,6 +1281,11 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   {
     uint256 userCurrentUpdateIndex = userNextPrice_currentUpdateIndex[marketIndex][user];
     if (userCurrentUpdateIndex != 0 && userCurrentUpdateIndex <= marketUpdateIndex[marketIndex]) {
+      //
+      /*
+        Hello!
+      */
+      //
       _executeOutstandingNextPriceMints(marketIndex, user, true);
       _executeOutstandingNextPriceMints(marketIndex, user, false);
       _executeOutstandingNextPriceRedeems(marketIndex, user, true);
@@ -1221,7 +1314,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   /// @param marketIndexes An array of int32s which each uniquely identify a market.
   function executeOutstandingNextPriceSettlementsUserMulti(
     address user,
-    uint32[] memory marketIndexes
+    uint32[] calldata marketIndexes
   ) external {
     uint256 length = marketIndexes.length;
     for (uint256 i = 0; i < length; i++) {
@@ -1442,5 +1535,19 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
       false,
       changeInSupply_syntheticToken_short
     );
+  }
+
+  // Upgrade helper:
+  function upgradeToUsingCompactValueAndPriceSnapshots() public {
+    // If this function has alreday been called this value will not be 0!
+    if (marketSideValueInPaymentToken[1].value_long == 0) {
+      for (uint32 market = 1; market <= latestMarket; market++) {
+        marketSideValueInPaymentToken[market] = MarketSideValueInPaymentToken(
+          SafeCast.toUint128(marketSideValueInPaymentTokenLEGACY[market][true]),
+          SafeCast.toUint128(marketSideValueInPaymentTokenLEGACY[market][false])
+        );
+      }
+    }
+    emit Upgrade(1);
   }
 }

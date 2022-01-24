@@ -18,3 +18,6 @@ external setVariableRaw: ('smockedContract, ~name: string, ~value: 'a) => Promis
 
 @send
 external reset: 'smartContractFunction => unit = "reset"
+
+// An abstract type for structs, can use "Obj.magic" with it for now.
+type abstractStructType

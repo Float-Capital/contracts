@@ -56,19 +56,21 @@ let testUnit =
       );
     };
 
-	// TODO: add tests to test case when amountStakedShort == 0 or amountStakedLong == 0
+    // TODO: add tests to test case when amountStakedShort == 0 or amountStakedLong == 0
     it("[Happy Path] it calculates all the values correctly", () => {
       let%Await floatDue = setup();
 
       let expectedFloatDueLong =
         syntheticRewardToLongToken
-        ->sub(syntheticRewardFromLongToken)
+        ->mul(CONSTANTS.eightyBitShift)
+        ->sub(syntheticRewardFromLongToken->mul(CONSTANTS.eightyBitShift))
         ->mul(amountStakedLong)
         ->div(CONSTANTS.floatIssuanceFixedDecimal);
 
       let expectedFloatDueShort =
         syntheticRewardToShortToken
-        ->sub(syntheticRewardFromShortToken)
+        ->mul(CONSTANTS.eightyBitShift)
+        ->sub(syntheticRewardFromShortToken->mul(CONSTANTS.eightyBitShift))
         ->mul(amountStakedShort)
         ->div(CONSTANTS.floatIssuanceFixedDecimal);
 

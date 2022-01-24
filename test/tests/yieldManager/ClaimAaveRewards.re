@@ -2,7 +2,7 @@ open Globals;
 open Mocha;
 
 let testUnit =
-    (~contracts: ref(Contract.YieldManagerAaveHelpers.contractsType)) => {
+    (~contracts: ref(Contract.YieldManagerAaveBasicHelpers.contractsType)) => {
   describe("Claiming Aave reward tokens", () => {
     describe("claimAaveRewardsToTreasuryTxPromise", () => {
       let claimAaveRewardsToTreasuryTxPromise = ref("NotSetYet"->Obj.magic);
@@ -22,7 +22,7 @@ let testUnit =
 
         claimAaveRewardsToTreasuryTxPromise :=
           (contracts.contents)#yieldManagerAave
-          ->YieldManagerAave.claimAaveRewardsToTreasury;
+          ->YieldManagerAaveBasic.claimAaveRewardsToTreasury;
 
         claimAaveRewardsToTreasuryTxPromise.contents;
       });

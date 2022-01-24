@@ -3,9 +3,14 @@
 
 var Curry = require("rescript/lib/js/curry.js");
 var LetOps = require("../test/library/LetOps.js");
+var CONSTANTS = require("../test/CONSTANTS.js");
 var DeployHelpers = require("./DeployHelpers.js");
 
 var avaxOraclePriceFeedAddress = ethers.utils.getAddress("0x0A77230d17318075983913bC2145DB16C7366156");
+
+var joeOraclePriceFeedAddress = ethers.utils.getAddress("0x02D35d3a8aC3e1626d3eE09A78Dd87286F5E8e3a");
+
+var qiOraclePriceFeedAddress = ethers.utils.getAddress("0x36E039e6391A5E7A7267650979fdf613f659be5D");
 
 function launchAvaxMarket(param, deploymentArgs) {
   var treasury = param.treasury;
@@ -16,11 +21,43 @@ function launchAvaxMarket(param, deploymentArgs) {
                 return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
                               var admin = loadedAccounts[1];
                               console.log("deploying markets");
-                              return DeployHelpers.deployAvax_Avalanche(longShort, staker, treasury, admin, paymentToken, avaxOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts);
+                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, avaxOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "Avalanche2", "Avax2", CONSTANTS.tenToThe18, 2, 1, /* AaveDAI */0);
+                            }));
+              }));
+}
+
+function launchJoeMarket(param, deploymentArgs) {
+  var treasury = param.treasury;
+  var paymentToken = param.paymentToken;
+  var longShort = param.longShort;
+  var staker = param.staker;
+  return LetOps.AwaitThen.let_(Curry._1(deploymentArgs.getNamedAccounts, undefined), (function (namedAccounts) {
+                return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
+                              var admin = loadedAccounts[1];
+                              console.log("deploying markets");
+                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, joeOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "JOE 2x", "2JOE", CONSTANTS.twoTimesTenToThe18, 2, 2, /* AaveDAI */0);
+                            }));
+              }));
+}
+
+function launchQiMarket(param, deploymentArgs) {
+  var treasury = param.treasury;
+  var paymentToken = param.paymentToken;
+  var longShort = param.longShort;
+  var staker = param.staker;
+  return LetOps.AwaitThen.let_(Curry._1(deploymentArgs.getNamedAccounts, undefined), (function (namedAccounts) {
+                return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
+                              var admin = loadedAccounts[1];
+                              console.log("deploying markets");
+                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, qiOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "QI 2x", "2QI", CONSTANTS.twoTimesTenToThe18, 2, 3, /* BenqiDAI */1);
                             }));
               }));
 }
 
 exports.avaxOraclePriceFeedAddress = avaxOraclePriceFeedAddress;
+exports.joeOraclePriceFeedAddress = joeOraclePriceFeedAddress;
+exports.qiOraclePriceFeedAddress = qiOraclePriceFeedAddress;
 exports.launchAvaxMarket = launchAvaxMarket;
+exports.launchJoeMarket = launchJoeMarket;
+exports.launchQiMarket = launchQiMarket;
 /* avaxOraclePriceFeedAddress Not a pure module */

@@ -4,4 +4,4 @@ overrides:
       printWidth: 100
       tabWidth: 2
       explicitTypes: "always"
-      compiler: "0.8.3"
+      compiler: "0.8.10"

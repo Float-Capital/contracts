@@ -309,9 +309,10 @@ let testUnit =
         let {staker, longShortSmocked} = contracts.contents;
 
         let _ =
-          longShortSmocked->LongShortSmocked.mockMarketSideValueInPaymentTokenToReturn(
+          longShortSmocked->LongShortSmocked.mockMarketSideValueInPaymentTokenToReturn((
             CONSTANTS.tenToThe18,
-          );
+            CONSTANTS.tenToThe18,
+          ));
 
         let%Await _ =
           staker->Staker.setVariable(

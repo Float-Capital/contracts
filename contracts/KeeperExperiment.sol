@@ -9,7 +9,7 @@ For now no effort has been put into making it conform to the proper keeper inter
 
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.3;
+pragma solidity 0.8.10;
 
 import "./abstract/AccessControlledAndUpgradeable.sol";
 import "./interfaces/ILongShort.sol";
@@ -52,8 +52,10 @@ contract KeeperExperiment is AccessControlledAndUpgradeable {
 
   function wasLastUpdateOlderThanThreshold(uint32 marketIndex) public view returns (bool) {
     uint256 latestRewardIndex = IStaker(stakerAddress).latestRewardIndex(marketIndex);
-    (uint256 lastUpdateTimestamp, , ) = IStaker(stakerAddress)
-      .accumulativeFloatPerSyntheticTokenSnapshots(marketIndex, latestRewardIndex);
+    uint256 lastUpdateTimestamp = IStaker(stakerAddress).safe_getUpdateTimestamp(
+      marketIndex,
+      latestRewardIndex
+    );
 
     return lastUpdateTimestamp + updateTimeThresholdInSeconds[marketIndex] < block.timestamp;
   }

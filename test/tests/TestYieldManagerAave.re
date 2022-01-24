@@ -4,7 +4,7 @@ open Mocha;
 
 describe("Float System", () => {
   let accounts: ref(array(Ethers.Wallet.t)) = ref(None->Obj.magic);
-  let contracts: ref(Contract.YieldManagerAaveHelpers.contractsType) =
+  let contracts: ref(Contract.YieldManagerAaveBasicHelpers.contractsType) =
     ref(None->Obj.magic);
 
   let setup = () => {
@@ -24,10 +24,11 @@ describe("Float System", () => {
     let%Await lendingPoolAddressesProviderSmocked =
       LendingPoolAddressesProviderMockSmocked.make();
 
-    let%Await yieldManagerAave =
-      YieldManagerAave.make();
+    let%Await yieldManagerAave = YieldManagerAaveBasic.make();
 
-    let%Await _ = yieldManagerAave->YieldManagerAave.initialize(~longShort=longShortAddress,
+    let%Await _ =
+      yieldManagerAave->YieldManagerAaveBasic.initialize(
+        ~longShort=longShortAddress,
         ~treasury=treasury.address,
         ~paymentToken=paymentTokenSmocked.address,
         ~aToken=aTokenSmocked.address,
@@ -35,7 +36,8 @@ describe("Float System", () => {
           lendingPoolAddressesProviderSmocked.address,
         ~aaveIncentivesController=aaveIncentivesControllerSmocked.address,
         ~aaveReferralCode=6543,
-        ~admin=Helpers.randomAddress());
+        ~admin=Helpers.randomAddress(),
+      );
 
     contracts :=
       {
@@ -46,10 +48,10 @@ describe("Float System", () => {
         "aaveIncentivesController": aaveIncentivesControllerSmocked,
       };
   };
-  describeUnit("(un-optimised) YieldManagerAave - internals exposed", () => {
+  describeUnit("(un-optimised) YieldManagerAaveBasic - internals exposed", () => {
     before_each(setup)
   });
-  describeUnit("(optimised) YieldManagerAave - internals exposed ", () => {
+  describeUnit("(optimised) YieldManagerAaveBasic - internals exposed ", () => {
     before(setup);
 
     ClaimAaveRewards.testUnit(~contracts);

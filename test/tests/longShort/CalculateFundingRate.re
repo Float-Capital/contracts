@@ -15,7 +15,11 @@ let testUnit =
     let longAmount = Helpers.randomTokenAmount();
     let shortAmount = Helpers.randomTokenAmount();
 
-    let fundingRateMultiplier_e18 = Helpers.randomTokenAmount();
+    let fundingRateMultiplier_e18 =
+      Helpers.randomBigIntInRange(5, 5000)
+      ->Ethers.BigNumber.mul(
+          Ethers.BigNumber.fromUnsafe("10000000000000000"),
+        );
 
     let overBalanced =
       longAmount->Ethers.BigNumber.gt(shortAmount) ? longAmount : shortAmount;
@@ -35,11 +39,7 @@ let testUnit =
           ~stakerAddress=staker.address,
         );
 
-      staker->StakerSmocked.mockAccumulativeFloatPerSyntheticTokenSnapshotsToReturn((
-        timestamp,
-        zeroBn,
-        zeroBn,
-      ));
+      staker->StakerSmocked.mockSafe_getUpdateTimestampToReturn(timestamp);
 
       longShort->LongShort.changeMarketFundingRateMultiplier(
         ~marketIndex,

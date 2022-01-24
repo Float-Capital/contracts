@@ -1,9 +1,9 @@
 require("hardhat-spdx-license-identifier");
 require("@tenderly/hardhat-tenderly"); // https://hardhat.org/plugins/tenderly-hardhat-tenderly.html
 require("solidity-coverage");
-require("@openzeppelin/hardhat-upgrades");
+// require("@openzeppelin/hardhat-upgrades");
 require("./hardhat-plugins/codegen");
-require("hardhat-deploy");
+require("@float-capital/hardhat-deploy");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 
@@ -73,7 +73,7 @@ if (process.env.HARDHAT_FORK) {
 module.exports = {
   // This is a sample solc configuration that specifies which version of solc to use
   solidity: {
-    version: "0.8.3",
+    version: "0.8.10",
     settings: {
       optimizer: {
         enabled: true,
@@ -90,16 +90,16 @@ module.exports = {
       // this line ensure the use of the corresponding accounts
       forking: process.env.HARDHAT_FORK
         ? {
-            url:
-              process.env.HARDHAT_FORK == "polygon"
-                ? polygonProviderUrl
-                : mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
-          }
+          url:
+            process.env.HARDHAT_FORK == "polygon"
+              ? polygonProviderUrl
+              : mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
+        }
         : undefined,
       accounts: process.env.HARDHAT_FORK
         ? {
-            mnemonic,
-          }
+          mnemonic,
+        }
         : undefined,
     },
     ganache: {
@@ -113,22 +113,22 @@ module.exports = {
       url:
         polygonProviderUrl || "https://matic-mainnet-full-rpc.bwarelabs.com/",
       accounts: { mnemonic },
-      gasPrice: 60000000000,
+      gasPrice: 180000000000, // 180 gwei
       gas: 10000000,
     },
     avalanche: {
       chainId: 43114,
       url: "https://api.avax.network/ext/bc/C/rpc",
       accounts: { mnemonic },
-      // gasPrice: 60000000000,
-      // gas: 8000000,
+      // gasPrice: 40000000000,
+      // gas: 1000000,
     },
     mumbai: {
       chainId: 80001,
       url: mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
       accounts: { mnemonic },
-      gasPrice: 1000000000,
-      gas: 8000000,
+      // gasPrice: 1000000000,
+      // gas: 8000000,
     },
   },
   paths: {
@@ -158,6 +158,7 @@ module.exports = {
   abiExporter: {
     path: "./abis",
     clear: true,
+    runOnCompile: true,
     flat: true,
     only: [
       ":ERC20Mock$",
@@ -165,12 +166,12 @@ module.exports = {
       ":LongShort$",
       ":SyntheticToken$",
       ":SyntheticTokenUpgradeable$",
-      ":YieldManagerAave$",
+      ":YieldManagerAaveBasic$",
       ":FloatCapital_v0$",
       ":Migrations$",
       ":TokenFactory$",
       ":FloatToken$",
-      ":Staker$",
+      "Staker$",
       ":Treasury_v0$",
       ":TreasuryAlpha$",
       ":OracleManager$",
