@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import "../SyntheticTokenUpgradeable.sol";
+import "../MIA/SyntheticTokenUpgradeable.sol";
 
 //This isn't a perfect solution:
 //Still possible to stake - must monitor this
@@ -47,7 +47,8 @@ contract DeprecatedSyntheticTokenUpgradeable is SyntheticTokenUpgradeable {
     address to,
     uint256 amount
   ) internal override {
-    if (sender != longShort || to != longShort) {
+    // Allows users to unstake + redeem their synthetic tokens!
+    if (sender != longShort && to != longShort && sender != staker) {
       revert("Market deprecated, transfer disabled");
     }
   }

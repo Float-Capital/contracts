@@ -4,8 +4,11 @@
 var Curry = require("rescript/lib/js/curry.js");
 var LetOps = require("../test/library/LetOps.js");
 var Globals = require("../test/library/Globals.js");
-var DeployHelpers = require("./DeployHelpers.js");
+var Hardhat = require("hardhat");
+var YieldManagerMock = require("../test/library/contracts/YieldManagerMock.js");
+var TestnetDeployHelpers = require("./helpers/TestnetDeployHelpers.js");
 var ChainlinkOracleAddresses = require("./addresses/ChainlinkOracleAddresses.js");
+var ProtocolInteractionHelpers = require("./helpers/ProtocolInteractionHelpers.js");
 
 function runMumbaiTransactions(param, deploymentArgs) {
   var treasury = param.treasury;
@@ -17,9 +20,9 @@ function runMumbaiTransactions(param, deploymentArgs) {
                               var admin = loadedAccounts[1];
                               var user1 = loadedAccounts[2];
                               console.log("deploying markets");
-                              return LetOps.AwaitThen.let_(DeployHelpers.deployMumbaiMarketUpgradeable("ETH Market", "ETH", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.ethOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
-                                            return LetOps.AwaitThen.let_(DeployHelpers.deployMumbaiMarketUpgradeable("MATIC Market", "MATIC", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.maticOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
-                                                          return LetOps.AwaitThen.let_(DeployHelpers.deployMumbaiMarketUpgradeable("BTC Market", "BTC", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.btcOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
+                              return LetOps.AwaitThen.let_(TestnetDeployHelpers.deployMumbaiMarketUpgradeable("ETH Market", "ETH", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.ethOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
+                                            return LetOps.AwaitThen.let_(TestnetDeployHelpers.deployMumbaiMarketUpgradeable("MATIC Market", "MATIC", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.maticOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
+                                                          return LetOps.AwaitThen.let_(TestnetDeployHelpers.deployMumbaiMarketUpgradeable("BTC Market", "BTC", longShort, staker, treasury, admin, paymentToken, ChainlinkOracleAddresses.Mumbai.btcOracleChainlink, deploymentArgs.deployments, namedAccounts), (function (param) {
                                                                         var initialMarkets = [
                                                                           1,
                                                                           2,
@@ -30,22 +33,22 @@ function runMumbaiTransactions(param, deploymentArgs) {
                                                                         var redeemShortAmount = Globals.div(shortMintAmount, Globals.bnFromInt(2));
                                                                         var longStakeAmount = Globals.div(longMintAmount, Globals.twoBn);
                                                                         console.log("Executing Long Mints");
-                                                                        return LetOps.AwaitThen.let_(DeployHelpers.executeOnMarkets(initialMarkets, (function (__x) {
-                                                                                          return DeployHelpers.mintNextPrice(longMintAmount, __x, paymentToken, longShort, user1, true);
+                                                                        return LetOps.AwaitThen.let_(ProtocolInteractionHelpers.executeOnMarkets(initialMarkets, (function (__x) {
+                                                                                          return ProtocolInteractionHelpers.mintNextPrice(longMintAmount, __x, paymentToken, longShort, user1, true);
                                                                                         })), (function (param) {
                                                                                       console.log("Executing Short Mints");
-                                                                                      return LetOps.AwaitThen.let_(DeployHelpers.executeOnMarkets(initialMarkets, (function (__x) {
-                                                                                                        return DeployHelpers.mintNextPrice(longMintAmount, __x, paymentToken, longShort, user1, false);
+                                                                                      return LetOps.AwaitThen.let_(ProtocolInteractionHelpers.executeOnMarkets(initialMarkets, (function (__x) {
+                                                                                                        return ProtocolInteractionHelpers.mintNextPrice(longMintAmount, __x, paymentToken, longShort, user1, false);
                                                                                                       })), (function (param) {
                                                                                                     return LetOps.AwaitThen.let_(Globals.sleep(27000), (function (param) {
                                                                                                                   console.log("Executing Short Position Redeem");
-                                                                                                                  return LetOps.AwaitThen.let_(DeployHelpers.executeOnMarkets(initialMarkets, (function (__x) {
-                                                                                                                                    return DeployHelpers.redeemNextPrice(redeemShortAmount, __x, longShort, user1, false);
+                                                                                                                  return LetOps.AwaitThen.let_(ProtocolInteractionHelpers.executeOnMarkets(initialMarkets, (function (__x) {
+                                                                                                                                    return ProtocolInteractionHelpers.redeemNextPrice(redeemShortAmount, __x, longShort, user1, false);
                                                                                                                                   })), (function (param) {
                                                                                                                                 return LetOps.AwaitThen.let_(Globals.sleep(27000), (function (param) {
                                                                                                                                               console.log("Staking long position");
-                                                                                                                                              return DeployHelpers.executeOnMarkets(initialMarkets, (function (__x) {
-                                                                                                                                                            return DeployHelpers.stakeSynthLong(longStakeAmount, longShort, __x, user1);
+                                                                                                                                              return ProtocolInteractionHelpers.executeOnMarkets(initialMarkets, (function (__x) {
+                                                                                                                                                            return ProtocolInteractionHelpers.stakeSynthLong(longStakeAmount, longShort, __x, user1);
                                                                                                                                                           }));
                                                                                                                                             }));
                                                                                                                               }));
@@ -59,5 +62,43 @@ function runMumbaiTransactions(param, deploymentArgs) {
               }));
 }
 
+function deployNewPaymentTokenMarket(param, deploymentArgs) {
+  var treasury = param.treasury;
+  var paymentToken = param.paymentToken;
+  var longShort = param.longShort;
+  var staker = param.staker;
+  return LetOps.AwaitThen.let_(Curry._1(deploymentArgs.getNamedAccounts, undefined), (function (namedAccounts) {
+                return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
+                              var admin = loadedAccounts[1];
+                              var syntheticSymbol = "SAND";
+                              return LetOps.AwaitThen.let_(deploymentArgs.deployments.deploy("OracleManagerSAND", {
+                                              from: namedAccounts.deployer,
+                                              log: true,
+                                              contract: "OracleManagerChainlinkTestnet",
+                                              args: [
+                                                admin.address,
+                                                "0x9dd18534b8f456557d11B9DDB14dA89b2e52e308",
+                                                Globals.bnFromInt(27)
+                                              ]
+                                            }), (function (oracleManager) {
+                                            console.log("a.3");
+                                            return LetOps.AwaitThen.let_(YieldManagerMock.make(longShort.address, treasury.address, paymentToken.address), (function (yieldManagerDeployment) {
+                                                          return LetOps.AwaitThen.let_(Hardhat.ethers.getContractAt("YieldManagerMock", yieldManagerDeployment.address), (function (yieldManager) {
+                                                                        return LetOps.AwaitThen.let_(yieldManager.setYieldRate(ethers.BigNumber.from("43092609840000")), (function (param) {
+                                                                                      return LetOps.AwaitThen.let_(paymentToken.MINTER_ROLE(), (function (mintRole) {
+                                                                                                    return LetOps.AwaitThen.let_(paymentToken.grantRole(mintRole, yieldManager.address), (function (param) {
+                                                                                                                  console.log("a.4");
+                                                                                                                  return TestnetDeployHelpers.deployTestnetMarketUpgradeableCore("the Sandbox", syntheticSymbol, longShort, staker, admin, paymentToken, oracleManager.address, yieldManager.address, deploymentArgs.deployments, namedAccounts);
+                                                                                                                }));
+                                                                                                  }));
+                                                                                    }));
+                                                                      }));
+                                                        }));
+                                          }));
+                            }));
+              }));
+}
+
 exports.runMumbaiTransactions = runMumbaiTransactions;
+exports.deployNewPaymentTokenMarket = deployNewPaymentTokenMarket;
 /* Globals Not a pure module */

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import "../LongShort.sol";
+import "../longShort/template/LongShort.sol";
 
 /*
 NOTE: This contract is for testing purposes only!

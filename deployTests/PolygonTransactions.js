@@ -4,7 +4,7 @@
 var Curry = require("rescript/lib/js/curry.js");
 var LetOps = require("../test/library/LetOps.js");
 var CONSTANTS = require("../test/CONSTANTS.js");
-var DeployHelpers = require("./DeployHelpers.js");
+var DeployHelpers = require("./helpers/DeployHelpers.js");
 
 var ethMarketCapOraclePriceFeedAddress = ethers.utils.getAddress("0x67935f65D1577ced9f4929D3679A157E95C1c02c");
 

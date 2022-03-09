@@ -1,6 +1,7 @@
 open LetOps;
-open DeployHelpers;
+open TestnetDeployHelpers;
 open Globals;
+open ProtocolInteractionHelpers;
 
 type allContracts = {
   staker: Staker.t,
@@ -24,9 +25,9 @@ let runTestTransactions =
   let user7 = loadedAccounts->Array.getUnsafe(8);
   let user8 = loadedAccounts->Array.getUnsafe(9);
 
-  let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user1);
-  let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user2);
-  let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user3);
+  let%AwaitThen _ = topupBalanceIfLow(~from=admin, ~to_=user1);
+  let%AwaitThen _ = topupBalanceIfLow(~from=admin, ~to_=user2);
+  let%AwaitThen _ = topupBalanceIfLow(~from=admin, ~to_=user3);
 
   Js.log("deploying markets");
 
@@ -143,7 +144,7 @@ let runTestTransactions =
     executeOnMarkets(
       initialMarkets,
       shiftFromShortNextPriceWithSystemUpdate(
-        ~amount=redeemShortAmount,
+        ~amountSyntheticTokensToShift=redeemShortAmount,
         ~marketIndex=_,
         ~longShort,
         ~user=user1,
@@ -166,24 +167,28 @@ let runTestTransactions =
   Js.log("multiple synth shift from long, same price update");
 
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user1)
-    ->LongShort.shiftPositionFromLongNextPrice(
-        ~marketIndex=1,
-        ~amountSyntheticTokensToShift=twoBn,
-      );
+    shiftNextPrice(
+      ~amountSyntheticTokensToShift=twoBn,
+      ~marketIndex=1,
+      ~longShort: LongShort.t,
+      ~user=user1,
+      ~isLong=true,
+    );
 
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user1)
-    ->LongShort.shiftPositionFromLongNextPrice(
-        ~marketIndex=1,
-        ~amountSyntheticTokensToShift=twoBn,
-      );
+    shiftNextPrice(
+      ~amountSyntheticTokensToShift=twoBn,
+      ~marketIndex=1,
+      ~longShort: LongShort.t,
+      ~user=user1,
+      ~isLong=true,
+    );
 
   let%AwaitThen _ = priceAndStateUpdate();
 
   let longShiftAmount = longStakeAmount->div(twoBn);
+
+  Js.log("Shift stake with system updated all markets");
 
   let%AwaitThen _ =
     executeOnMarkets(
@@ -199,9 +204,11 @@ let runTestTransactions =
       ),
     );
 
-  let%AwaitThen _ = DeployHelpers.topupBalanceIfLow(~from=admin, ~to_=user7);
+  let%AwaitThen _ = topupBalanceIfLow(~from=admin, ~to_=user7);
 
   let%AwaitThen _ = priceAndStateUpdate();
+
+  Js.log("Multiple users minting long and short - all markets");
   let%AwaitThen _ =
     executeOnMarkets(
       initialMarkets,
@@ -294,80 +301,94 @@ let runTestTransactions =
 
   Js.log2("Amount to shift is", shortShiftAmount->div(twoBn)->bnToString);
   let%AwaitThen _ =
-    staker
-    ->ContractHelpers.connect(~address=user2)
-    ->Staker.shiftTokens(
-        ~isShiftFromLong=false,
-        ~marketIndex=1,
-        ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
-      );
+    shiftNextPrice(
+      ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
+      ~marketIndex=1,
+      ~longShort,
+      ~user=user2,
+      ~isLong=false,
+    );
 
   Js.log2("Amount to shift is", shortShiftAmount->div(twoBn)->bnToString);
   let%AwaitThen _ =
-    staker
-    ->ContractHelpers.connect(~address=user2)
-    ->Staker.shiftTokens(
-        ~isShiftFromLong=false,
-        ~marketIndex=1,
-        ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
-      );
+    shiftNextPrice(
+      ~amountSyntheticTokensToShift=shortShiftAmount->div(twoBn),
+      ~marketIndex=1,
+      ~longShort,
+      ~user=user2,
+      ~isLong=false,
+    );
 
   Js.log("Multiple mints same price update");
   let mintAmount = bnFromString("20000000000000000");
+
   let%AwaitThen _ =
-    mintAndApprove(
+    mintNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
       ~paymentToken,
-      ~amount=mintAmount->mul(CONSTANTS.twoBn),
+      ~longShort: LongShort.t,
       ~user=user3,
-      ~approvedAddress=longShort.address,
+      ~isLong=true,
     );
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
-
-  let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+    mintNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
+      ~paymentToken,
+      ~longShort: LongShort.t,
+      ~user=user3,
+      ~isLong=true,
+    );
 
   let%AwaitThen _ = priceAndStateUpdate();
+
+  Js.log("Redeem Long market ID 1");
+
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.redeemLongNextPrice(
-        ~marketIndex=1,
-        ~tokens_redeem=mintAmount,
-      );
+    redeemNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
+      ~longShort,
+      ~user=user3,
+      ~isLong=true,
+    );
+
   let%AwaitThen _ = priceAndStateUpdate();
 
   Js.log("Multiple mints same price update");
-  let mintAmount = bnFromString("20000000000000000");
   let%AwaitThen _ =
-    mintAndApprove(
+    mintNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
       ~paymentToken,
-      ~amount=mintAmount->mul(CONSTANTS.twoBn),
+      ~longShort: LongShort.t,
       ~user=user3,
-      ~approvedAddress=longShort.address,
+      ~isLong=true,
     );
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
-
-  let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.mintLongNextPrice(~marketIndex=1, ~amount=mintAmount);
+    mintNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
+      ~paymentToken,
+      ~longShort: LongShort.t,
+      ~user=user3,
+      ~isLong=true,
+    );
 
   let%AwaitThen _ = priceAndStateUpdate();
+
+  Js.log("Redeem Long market ID 1");
+
   let%AwaitThen _ =
-    longShort
-    ->ContractHelpers.connect(~address=user3)
-    ->LongShort.redeemLongNextPrice(
-        ~marketIndex=1,
-        ~tokens_redeem=mintAmount,
-      );
+    redeemNextPrice(
+      ~amount=mintAmount,
+      ~marketIndex=1,
+      ~longShort,
+      ~user=user3,
+      ~isLong=true,
+    );
+
   let%AwaitThen _ = priceAndStateUpdate();
 
   Js.log("Update treasury base price");
@@ -392,6 +413,48 @@ let runTestTransactions =
         ~staker,
         ~marketIndex=_,
         ~user=user1,
+      ),
+    );
+
+  Js.log("Transfer tokens from user1 to user2");
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      transferSynthLong(
+        ~longShort,
+        ~userFrom=user1,
+        ~userTo=user2,
+        ~marketIndex=_,
+      ),
+    );
+
+  Js.log("Executing Long Mint and Stakes");
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintAndStakeNextPriceWithSystemStateUpdate(
+        ~amount=longMintAmount,
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user1,
+        ~admin,
+        ~isLong=true,
+      ),
+    );
+
+  Js.log("Executing Short Mint and Stakes");
+  let%AwaitThen _ =
+    executeOnMarkets(
+      initialMarkets,
+      mintAndStakeNextPriceWithSystemStateUpdate(
+        ~amount=shortMintAmount,
+        ~marketIndex=_,
+        ~paymentToken,
+        ~longShort,
+        ~user=user1,
+        ~admin,
+        ~isLong=false,
       ),
     );
 

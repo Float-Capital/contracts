@@ -13,8 +13,10 @@ const fourHours = 14400; // 7200 = every 2 hours
 const sixHours = 21600; // 21600 = every 6 hours
 const twelveHours = 43200; // 43200 = every 12 hours
 
+const tenthOfAPercent = "1000000000000000" // 2.5*10^15 is a price change of 0.25%
 const quarterPercent = "2500000000000000" // 2.5*10^15 is a price change of 0.25%
 const halfPercent = "5000000000000000" // 5*10^15 is a price change of 0.5%
+const threeQuarterPercent = "7500000000000000" // 5*10^15 is a price change of 0.5%
 
 
 const pollygonConfig = [
@@ -63,23 +65,23 @@ const pollygonConfig = [
 const avalancheConfig = [
   {
     marketIndex: 1,
-    heartbeat: sixHours, deviationThreshold: halfPercent
+    heartbeat: sixHours, deviationThreshold: threeQuarterPercent
   },
   {
     marketIndex: 2,
-    heartbeat: sixHours, deviationThreshold: halfPercent
+    heartbeat: sixHours, deviationThreshold: threeQuarterPercent
   },
   {
     marketIndex: 3,
-    heartbeat: sixHours, deviationThreshold: halfPercent
+    heartbeat: sixHours, deviationThreshold: threeQuarterPercent
   },
   {
     marketIndex: 4,
-    heartbeat: sixHours, deviationThreshold: halfPercent
+    heartbeat: sixHours, deviationThreshold: threeQuarterPercent
   },
   {
     marketIndex: 5,
-    heartbeat: sixHours, deviationThreshold: halfPercent
+    heartbeat: sixHours, deviationThreshold: threeQuarterPercent
   }
 ]
 

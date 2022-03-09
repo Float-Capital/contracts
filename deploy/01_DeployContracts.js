@@ -15,6 +15,7 @@ const {
 const mumbaiDaiAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
 const polygonDaiAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
 const avalancheDaiAddress = "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70";
+const ftmTestnetDaiAddress = "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6";
 
 let networkToUse = network.name;
 
@@ -38,6 +39,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     paymentTokenAddress = avalancheDaiAddress;
   } else if (networkToUse === "mumbai") {
     paymentTokenAddress = mumbaiDaiAddress;
+  } else if (networkToUse === "fantom-testnet") {
+    paymentTokenAddress = ftmTestnetDaiAddress;
   } else {
     console.log(networkToUse, TEST_COLLATERAL_TOKEN);
     let paymentToken = await deploy(TEST_COLLATERAL_TOKEN, {
@@ -52,9 +55,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       paymentTokenAddress
     );
 
-    accounts.map(account => {
-      paymentTokenContract["mint(address,uint256)"](account.address, "10000000000000000000000")
-    })
+    accounts.map((account) => {
+      paymentTokenContract["mint(address,uint256)"](
+        account.address,
+        "10000000000000000000000"
+      );
+    });
   }
 
   console.log("Deploying contracts with the account:", deployer);

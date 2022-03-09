@@ -1012,6 +1012,10 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
     gemCollecting(msg.sender)
   {
     require(amountSyntheticTokensToShift > 0, "No zero shifts.");
+
+    ILongShort(longShort).checkIfUserIsEligibleToTrade(msg.sender, marketIndex, isShiftFromLong);
+    ILongShort(longShort).setUserTradeTimer(msg.sender, marketIndex, !isShiftFromLong);
+
     address token = syntheticTokens[marketIndex][isShiftFromLong];
     uint256 totalAmountForNextShift = amountSyntheticTokensToShift +
       userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom[marketIndex][isShiftFromLong][

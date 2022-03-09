@@ -4,13 +4,19 @@
 var Curry = require("rescript/lib/js/curry.js");
 var LetOps = require("../test/library/LetOps.js");
 var CONSTANTS = require("../test/CONSTANTS.js");
-var DeployHelpers = require("./DeployHelpers.js");
+var DeployHelpers = require("./helpers/DeployHelpers.js");
 
 var avaxOraclePriceFeedAddress = ethers.utils.getAddress("0x0A77230d17318075983913bC2145DB16C7366156");
 
 var joeOraclePriceFeedAddress = ethers.utils.getAddress("0x02D35d3a8aC3e1626d3eE09A78Dd87286F5E8e3a");
 
 var qiOraclePriceFeedAddress = ethers.utils.getAddress("0x36E039e6391A5E7A7267650979fdf613f659be5D");
+
+var spellOraclePriceFeedAddress = ethers.utils.getAddress("0x4F3ddF9378a4865cf4f28BE51E10AECb83B7daeE");
+
+var benqiDaiCToken = "0x835866d37AFB8CB8F8334dCCdaf66cf01832Ff5D";
+
+var joeDaiCToken = "0xc988c170d0E38197DC634A45bF00169C7Aa7CA19";
 
 function launchAvaxMarket(param, deploymentArgs) {
   var treasury = param.treasury;
@@ -49,7 +55,26 @@ function launchQiMarket(param, deploymentArgs) {
                 return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
                               var admin = loadedAccounts[1];
                               console.log("deploying markets");
-                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, qiOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "QI 2x", "2QI", CONSTANTS.twoTimesTenToThe18, 2, 3, /* BenqiDAI */1);
+                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, qiOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "QI 2x", "2QI", CONSTANTS.twoTimesTenToThe18, 2, 3, /* CompoundDAI */{
+                                          _0: benqiDaiCToken
+                                        });
+                            }));
+              }));
+}
+
+function launchSpellMarket(param, deploymentArgs) {
+  var expectedMarketIndex = param.expectedMarketIndex;
+  var treasury = param.treasury;
+  var paymentToken = param.paymentToken;
+  var longShort = param.longShort;
+  var staker = param.staker;
+  return LetOps.AwaitThen.let_(Curry._1(deploymentArgs.getNamedAccounts, undefined), (function (namedAccounts) {
+                return LetOps.AwaitThen.let_(ethers.getSigners(), (function (loadedAccounts) {
+                              var admin = loadedAccounts[1];
+                              console.log("deploying markets");
+                              return DeployHelpers.deployAvalancheMarket(longShort, staker, treasury, admin, paymentToken, spellOraclePriceFeedAddress, deploymentArgs.deployments, namedAccounts, "SPELL 2x", "2SPELL", CONSTANTS.twoTimesTenToThe18, 2, expectedMarketIndex, /* CompoundDAI */{
+                                          _0: joeDaiCToken
+                                        });
                             }));
               }));
 }
@@ -57,7 +82,11 @@ function launchQiMarket(param, deploymentArgs) {
 exports.avaxOraclePriceFeedAddress = avaxOraclePriceFeedAddress;
 exports.joeOraclePriceFeedAddress = joeOraclePriceFeedAddress;
 exports.qiOraclePriceFeedAddress = qiOraclePriceFeedAddress;
+exports.spellOraclePriceFeedAddress = spellOraclePriceFeedAddress;
+exports.benqiDaiCToken = benqiDaiCToken;
+exports.joeDaiCToken = joeDaiCToken;
 exports.launchAvaxMarket = launchAvaxMarket;
 exports.launchJoeMarket = launchJoeMarket;
 exports.launchQiMarket = launchQiMarket;
+exports.launchSpellMarket = launchSpellMarket;
 /* avaxOraclePriceFeedAddress Not a pure module */

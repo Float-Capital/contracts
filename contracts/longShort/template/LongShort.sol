@@ -7,16 +7,14 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import "./interfaces/ITokenFactory.sol";
-import "./interfaces/ISyntheticToken.sol";
-import "./interfaces/IStaker.sol";
-import "./interfaces/ILongShort.sol";
-import "./interfaces/IYieldManager.sol";
-import "./interfaces/IOracleManager.sol";
-import "./abstract/AccessControlledAndUpgradeable.sol";
-import "./GEMS.sol";
-
-// import "hardhat/console.sol";
+import "../../interfaces/ITokenFactory.sol";
+import "../../interfaces/ISyntheticToken.sol";
+import "../../interfaces/IStaker.sol";
+import "../../interfaces/ILongShort.sol";
+import "../../interfaces/IYieldManager.sol";
+import "../../interfaces/IOracleManager.sol";
+import "../../abstract/AccessControlledAndUpgradeable.sol";
+import "../../GEMS.sol";
 
 /**
  **** visit https://float.capital *****
@@ -36,18 +34,14 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     ║          VARIABLES          ║
     ╚═════════════════════════════╝*/
 
-  /* ══════ CONFIG ══════ */
-  // NOTE: since these are constants, their use in `if` statements is optimized away by the compiler.
-  bool public constant HAS_LEGACY_DATA = true;
-
   /* ══════ Fixed-precision constants ══════ */
   /// @notice this is the address that permanently locked initial liquidity for markets is held by.
   /// These tokens will never move so market can never have zero liquidity on a side.
   /// @dev f10a7 spells float in hex - for fun - important part is that the private key for this address in not known.
-  address public constant PERMANENT_INITIAL_LIQUIDITY_HOLDER =
+  address private constant PERMANENT_INITIAL_LIQUIDITY_HOLDER =
     0xf10A7_F10A7_f10A7_F10a7_F10A7_f10a7_F10A7_f10a7;
 
-  uint256 public constant SECONDS_IN_A_YEAR_e18 = 315576e20;
+  uint256 private constant SECONDS_IN_A_YEAR_e18 = 315576e20;
 
   /// @dev an empty allocation of storage for use in future upgrades - inspiration from OZ:
   ///      https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/10f0f1a95b1b0fd5520351886bae7a03490f1056/contracts/token/ERC20/ERC20Upgradeable.sol#L361
@@ -120,6 +114,14 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   mapping(uint32 => mapping(bool => mapping(address => uint256)))
     public userNextPrice_syntheticToken_toShiftAwayFrom_marketSide;
 
+  /* ══════ trade time restriction logic  ══════ */
+  struct UserInteractionInfo {
+    uint32 timestamp;
+    uint224 effectiveAmountMinted; // TODO: set this in all the functions that do anything with the timestamp.
+  }
+  mapping(uint32 => mapping(bool => mapping(address => UserInteractionInfo)))
+    public userLastInteractionTimestamp;
+
   /*╔═════════════════════════════╗
     ║          MODIFIERS          ║
     ╚═════════════════════════════╝*/
@@ -131,6 +133,15 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
 
   modifier adminOnly() {
     adminOnlyModifierLogic();
+    _;
+  }
+  modifier stakerOnly() {
+    require(msg.sender == staker, "staker only");
+    _;
+  }
+
+  modifier onlyValidSynthetic(uint32 marketIndex, bool isLong) {
+    require(syntheticTokens[marketIndex][isLong] == msg.sender, "not valid synth");
     _;
   }
 
@@ -163,6 +174,20 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     _;
   }
 
+  /*╔═════════════════════════════════════════════════════╗
+    ║          NETWORK SPECIFIC CONFIG FUNCTIONS          ║
+    ╚═════════════════════════════════════════════════════╝*/
+
+  /// @dev This contract uses legacy data.
+  function HAS_LEGACY_DATA() internal pure virtual returns (bool) {
+    return true;
+  }
+
+  /// @dev This is the amount of time users need to wait between trades.
+  function CONTRACT_SLOW_TRADE_TIME() internal pure virtual returns (uint256) {
+    return 0;
+  }
+
   /*╔═════════════════════════════╗
     ║       CONTRACT SET-UP       ║
     ╚═════════════════════════════╝*/
@@ -191,6 +216,61 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     gems = _gems;
 
     emit LongShortV1(_admin, _tokenFactory, _staker);
+  }
+
+  /*╔════════════════════════════════════╗
+    ║       Trade Velocity Helpers       ║
+    ╚════════════════════════════════════╝*/
+
+  // sets the users timer when minting anything
+  function _setUserTradeTimer(uint32 marketIndex, bool isLong) internal {
+    // Could use `SafeCast.toUint32` from open Zeppelin also.
+    userLastInteractionTimestamp[marketIndex][isLong][msg.sender].timestamp = uint32(
+      block.timestamp
+    );
+  }
+
+  function setUserTradeTimer(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external stakerOnly {
+    // Could use `SafeCast.toUint32` from open Zeppelin also.
+    userLastInteractionTimestamp[marketIndex][isLong][user].timestamp = uint32(block.timestamp);
+  }
+
+  // updates if 20000 seconds have passed and user is clear.
+  function _checkIfUserIsEligibleToTrade(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) internal {
+    // when this function is upgraded to update, we can rename it to `_getAndUpdateTradeFees` and likely we'll include the trade amount as an argument.
+    uint256 lastInteractionTimestamp = uint256(
+      userLastInteractionTimestamp[marketIndex][isLong][msg.sender].timestamp
+    );
+    require(
+      ((block.timestamp - lastInteractionTimestamp) >= CONTRACT_SLOW_TRADE_TIME()),
+      "Rapid trading disabled, under wait period"
+    );
+  }
+
+  // updates if 20000 seconds have passed and user is clear.
+  function checkIfUserIsEligibleToTrade(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external stakerOnly {
+    _checkIfUserIsEligibleToTrade(user, marketIndex, isLong);
+  }
+
+  // updates if 20000 seconds have passed and user is clear.
+  function checkIfUserIsEligibleToSendSynth(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external onlyValidSynthetic(marketIndex, isLong) {
+    _checkIfUserIsEligibleToTrade(user, marketIndex, isLong);
   }
 
   /*╔═══════════════════╗
@@ -532,7 +612,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
 
     priceShort = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_short);
 
-    if (HAS_LEGACY_DATA) {
+    if (HAS_LEGACY_DATA()) {
       // In case price requested is part of legacy data-structure
       if (
         priceLong == 0 /* which means priceShort is also zero! */
@@ -553,7 +633,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     } else {
       price = uint256(syntheticToken_priceSnapshot[marketIndex][priceSnapshotIndex].price_short);
     }
-    if (HAS_LEGACY_DATA) {
+    if (HAS_LEGACY_DATA()) {
       // In case price requested is part of legacy data-structure
       if (price == 0) {
         price = syntheticToken_priceSnapshotLEGACY[marketIndex][isLong][priceSnapshotIndex];
@@ -1010,6 +1090,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     gemCollecting
   {
     require(amount > 0, "Mint amount == 0");
+    _setUserTradeTimer(marketIndex, isLong);
     _transferPaymentTokensFromUserToYieldManager(marketIndex, amount);
 
     batched_amountPaymentToken_deposit[marketIndex][isLong] += amount;
@@ -1032,6 +1113,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     gemCollecting
   {
     require(amount > 0, "Mint amount must be greater than 0");
+    _setUserTradeTimer(marketIndex, isLong);
     _transferPaymentTokensFromUserToYieldManager(marketIndex, amount);
 
     batched_amountPaymentToken_deposit[marketIndex][isLong] += amount;
@@ -1078,6 +1160,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     gemCollecting
   {
     require(tokens_redeem > 0, "Redeem amount == 0");
+    _checkIfUserIsEligibleToTrade(msg.sender, marketIndex, isLong);
     ISyntheticToken(syntheticTokens[marketIndex][isLong]).transferFrom(
       msg.sender,
       address(this),
@@ -1128,6 +1211,12 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     gemCollecting
   {
     require(amountSyntheticTokensToShift > 0, "Shift amount == 0");
+
+    if (msg.sender != staker) {
+      _checkIfUserIsEligibleToTrade(msg.sender, marketIndex, isShiftFromLong);
+      _setUserTradeTimer(marketIndex, !isShiftFromLong);
+    }
+
     ISyntheticToken(syntheticTokens[marketIndex][isShiftFromLong]).transferFrom(
       msg.sender,
       address(this),
@@ -1281,11 +1370,6 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   {
     uint256 userCurrentUpdateIndex = userNextPrice_currentUpdateIndex[marketIndex][user];
     if (userCurrentUpdateIndex != 0 && userCurrentUpdateIndex <= marketUpdateIndex[marketIndex]) {
-      //
-      /*
-        Hello!
-      */
-      //
       _executeOutstandingNextPriceMints(marketIndex, user, true);
       _executeOutstandingNextPriceMints(marketIndex, user, false);
       _executeOutstandingNextPriceRedeems(marketIndex, user, true);

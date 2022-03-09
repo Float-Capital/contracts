@@ -83,4 +83,4 @@ module.exports = async (hardhatDeployArguments) => {
   }
   console.log("after test txs");
 };
-module.exports.tags = ["deprecate-ohm"];
+module.exports.tags = ["deprecate-ohm-miss-deploy"];

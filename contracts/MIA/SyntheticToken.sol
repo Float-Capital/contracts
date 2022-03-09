@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.10;
 
-import "./interfaces/IStaker.sol";
-import "./interfaces/ILongShort.sol";
-import "./interfaces/ISyntheticToken.sol";
+import "../interfaces/IStaker.sol";
+import "../interfaces/ILongShort.sol";
+import "../interfaces/ISyntheticToken.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";

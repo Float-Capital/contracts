@@ -137,6 +137,9 @@ contract YieldManagerMock is IYieldManager {
     uint256 totalValueRealizedForMarket,
     uint256 treasuryYieldPercent_e18
   ) external override longShortOnly returns (uint256) {
+    // Ensure token state is current.
+    settle();
+
     uint256 unrealizedYield = totalHeld - totalValueRealizedForMarket - totalReservedForTreasury;
 
     if (unrealizedYield == 0) {

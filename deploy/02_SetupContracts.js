@@ -2,6 +2,9 @@ const { runTestTransactions } = require("../deployTests/RunTestTransactions");
 const {
   runMumbaiTransactions,
 } = require("../deployTests/RunMumbaiTransactions");
+const {
+  runFantomTestnetTransactions,
+} = require("../deployTests/RunFantomTestnetTransactions");
 const { launchPolygonMarkets } = require("../deployTests/PolygonTransactions");
 const { launchAvaxMarket } = require("../deployTests/AvalancheTransactions");
 const { ethers } = require("hardhat");
@@ -43,8 +46,11 @@ module.exports = async (hardhatDeployArguments) => {
     paymentTokenAddress = avalancheDaiAddress;
   } else if (networkToUse == "mumbai") {
     paymentTokenAddress = "0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F";
+  } else if (networkToUse === "fantom-testnet") {
+    paymentTokenAddress = "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6";
   } else if (networkToUse == "hardhat" || networkToUse == "ganache") {
-    paymentTokenAddress = (await deployments.get(TEST_COLLATERAL_TOKEN)).address;
+    paymentTokenAddress = (await deployments.get(TEST_COLLATERAL_TOKEN))
+      .address;
   }
   const paymentToken = await ethers.getContractAt(
     TEST_COLLATERAL_TOKEN,
@@ -53,7 +59,7 @@ module.exports = async (hardhatDeployArguments) => {
 
   // A hack to get the ERC20MockWithPublicMint token to work on ganache (with test transactions - codegen doesn't account for duplicate named functions)
   //    related: https://github.com/Float-Capital/monorepo/issues/1767
-  paymentToken["mint"] = paymentToken["mint(address,uint256)"]
+  paymentToken["mint"] = paymentToken["mint(address,uint256)"];
 
   const Gems = await deployments.get(GEMS);
   const gems = await ethers.getContractAt(GEMS, Gems.address);
@@ -160,6 +166,17 @@ module.exports = async (hardhatDeployArguments) => {
   } else if (networkToUse == "mumbai") {
     console.log("mumbai test transactions");
     await runMumbaiTransactions(
+      {
+        staker,
+        longShort: longShort.connect(admin),
+        paymentToken,
+        treasury,
+      },
+      hardhatDeployArguments
+    );
+  } else if (networkToUse == "fantom-testnet") {
+    console.log("fantom test transactions");
+    await runFantomTestnetTransactions(
       {
         staker,
         longShort: longShort.connect(admin),

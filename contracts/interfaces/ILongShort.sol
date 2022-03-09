@@ -107,6 +107,24 @@ interface ILongShort {
     view
     returns (uint128 marketSideValueInPaymentTokenLong, uint128 marketSideValueInPaymentTokenShort);
 
+  function setUserTradeTimer(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external;
+
+  function checkIfUserIsEligibleToTrade(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external;
+
+  function checkIfUserIsEligibleToSendSynth(
+    address user,
+    uint32 marketIndex,
+    bool isLong
+  ) external;
+
   function updateSystemState(uint32 marketIndex) external;
 
   function updateSystemStateMulti(uint32[] calldata marketIndex) external;

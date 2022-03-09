@@ -38,6 +38,7 @@ const {
   polygonscanApiKey,
   mumbaiProviderUrl,
   polygonProviderUrl,
+  avalancheProviderUrl,
 } = config;
 
 let runCoverage =
@@ -90,16 +91,16 @@ module.exports = {
       // this line ensure the use of the corresponding accounts
       forking: process.env.HARDHAT_FORK
         ? {
-          url:
-            process.env.HARDHAT_FORK == "polygon"
-              ? polygonProviderUrl
-              : mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
-        }
+            url:
+              process.env.HARDHAT_FORK == "polygon"
+                ? polygonProviderUrl
+                : mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
+          }
         : undefined,
       accounts: process.env.HARDHAT_FORK
         ? {
-          mnemonic,
-        }
+            mnemonic,
+          }
         : undefined,
     },
     ganache: {
@@ -114,21 +115,28 @@ module.exports = {
         polygonProviderUrl || "https://matic-mainnet-full-rpc.bwarelabs.com/",
       accounts: { mnemonic },
       gasPrice: 180000000000, // 180 gwei
-      gas: 10000000,
+      // gas: 12000000,
     },
     avalanche: {
       chainId: 43114,
-      url: "https://api.avax.network/ext/bc/C/rpc",
+      url: avalancheProviderUrl || "https://api.avax.network/ext/bc/C/rpc",
       accounts: { mnemonic },
-      // gasPrice: 40000000000,
+      gasPrice: 60000000000, // 60 gwei
       // gas: 1000000,
     },
     mumbai: {
       chainId: 80001,
       url: mumbaiProviderUrl || "https://rpc-mumbai.maticvigil.com/v1",
       accounts: { mnemonic },
-      // gasPrice: 1000000000,
+      // gasPrice: 180000000000,
       // gas: 8000000,
+    },
+    "fantom-testnet": {
+      url: "https://rpc.testnet.fantom.network",
+      chainId: 4002,
+      accounts: { mnemonic },
+      saveDeployments: true,
+      gasMultiplier: 2,
     },
   },
   paths: {
@@ -163,7 +171,7 @@ module.exports = {
     only: [
       ":ERC20Mock$",
       ":YieldManagerMock$",
-      ":LongShort$",
+      "LongShort$",
       ":SyntheticToken$",
       ":SyntheticTokenUpgradeable$",
       ":YieldManagerAaveBasic$",

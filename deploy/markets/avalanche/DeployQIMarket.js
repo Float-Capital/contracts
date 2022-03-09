@@ -13,7 +13,6 @@ const {
 } = require("../../../helper-hardhat-config");
 const { avalancheDaiAddress } = require("../../config");
 const { assert } = require("chai");
-// const { astsert } = require("chai");
 
 let networkToUse = network.name;
 

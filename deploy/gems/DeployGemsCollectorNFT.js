@@ -2,7 +2,7 @@ const { network } = require("hardhat");
 
 const { GEMS, GEMS_COLLECTOR_NFT } = require("../../helper-hardhat-config");
 
-const { addGemsNfts } = require("../../deployTests/DeployHelpers");
+const { addGemsNfts } = require("../../deployTests/helpers/DeployHelpers");
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 

@@ -39,3 +39,6 @@ type hardhatDeployArgument = {
 
 @module("hardhat") @scope("ethers")
 external getContractAt: (contractInstance, Ethers.ethAddress) => Promise.t<'a> = "getContractAt"
+
+@module("hardhat") @scope("ethers")
+external getContractAtName: (string, Ethers.ethAddress) => Promise.t<'a> = "getContractAt"

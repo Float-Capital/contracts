@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import "./SyntheticToken.sol";
+import "./MIA/SyntheticToken.sol";
 import "./interfaces/ITokenFactory.sol";
 
 /// @title TokenFactory

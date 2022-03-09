@@ -41,5 +41,6 @@ deployments/*
 !deployments/mumbai
 !deployments/polygon
 !deployments/avalanche
+!deployments/fantom-testnet
 
 deploymentSummary.json
