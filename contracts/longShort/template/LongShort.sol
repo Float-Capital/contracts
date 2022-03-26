@@ -247,7 +247,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
   ) internal {
     // when this function is upgraded to update, we can rename it to `_getAndUpdateTradeFees` and likely we'll include the trade amount as an argument.
     uint256 lastInteractionTimestamp = uint256(
-      userLastInteractionTimestamp[marketIndex][isLong][msg.sender].timestamp
+      userLastInteractionTimestamp[marketIndex][isLong][user].timestamp
     );
     require(
       ((block.timestamp - lastInteractionTimestamp) >= CONTRACT_SLOW_TRADE_TIME()),

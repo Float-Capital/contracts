@@ -13588,11 +13588,7 @@
       }
     }
   ],
-<<<<<<< HEAD
   "implementation": "0x3750B2f732E2C58C348b731dEEB50bC651C5d91B",
-=======
-  "implementation": "0x9f5E065153fb956533F5F3FE27299686Bb3107bB",
->>>>>>> 0b54ed16bc0f080987025a65c41b2e9959f8aa3a
   "devdoc": {
     "kind": "dev",
     "methods": {},

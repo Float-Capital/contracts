@@ -1191,7 +1191,7 @@ contract Staker is IStaker, AccessControlledAndUpgradeable {
         r,
         s
       );
-      hasRole(DISCOUNT_ROLE, discountSigner);
+      require(hasRole(DISCOUNT_ROLE, discountSigner), "invalid signature");
 
       require(block.timestamp < expiry, "coupon expired");
       require(userNonce[msg.sender] == nonce, "invalid nonce");
